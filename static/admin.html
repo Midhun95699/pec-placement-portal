@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PEC Placement — Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:#050F1A;color:#E8F4F2;min-height:100vh;}
+    .topbar{background:#0A1929;border-bottom:1px solid #1A3A55;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;}
+    .brand{font-family:'Space Mono',monospace;font-size:18px;color:#02C5A0;display:flex;align-items:center;gap:10px;}
+    .admin-badge{padding:4px 12px;background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:20px;font-size:12px;color:#FF6B6B;font-weight:700;}
+    .topbar-right{display:flex;align-items:center;gap:12px;}
+    .btn-refresh{padding:9px 20px;background:rgba(2,197,160,.15);color:#02C5A0;border:1.5px solid rgba(2,197,160,.3);border-radius:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;transition:.2s;}
+    .btn-refresh:hover{background:rgba(2,197,160,.25);}
+    .btn-logout{padding:9px 20px;background:transparent;color:#7A9BAE;border:1px solid #1A3A55;border-radius:9px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:.2s;}
+    .btn-logout:hover{border-color:#FF6B6B;color:#FF6B6B;}
+    .main{padding:32px;}
+    .page-title{font-size:24px;font-weight:700;margin-bottom:4px;}
+    .page-sub{font-size:13px;color:#7A9BAE;margin-bottom:28px;}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+    .stat-card{background:#0D2137;border:1px solid #1A3A55;border-radius:14px;padding:22px;position:relative;overflow:hidden;}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+    .sc1::before{background:#02C5A0}.sc2::before{background:#FFD166}.sc3::before{background:#A855F7}.sc4::before{background:#22C55E}
+    .stat-icon{font-size:28px;margin-bottom:10px;}
+    .stat-val{font-size:36px;font-weight:700;font-family:'Space Mono',monospace;margin-bottom:4px;}
+    .stat-lbl{font-size:13px;color:#7A9BAE;}
+    .card{background:#0D2137;border:1px solid #1A3A55;border-radius:16px;padding:24px;margin-bottom:20px;}
+    .card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+    .search-bar{width:100%;padding:11px 16px;background:#0A1929;border:1.5px solid #1A3A55;border-radius:10px;color:#E8F4F2;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px;transition:.2s;}
+    .search-bar:focus{border-color:#02C5A0;}
+    .search-bar::placeholder{color:#7A9BAE;}
+    table{width:100%;border-collapse:collapse;}
+    th{text-align:left;padding:12px 16px;font-size:11px;color:#7A9BAE;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #1A3A55;font-weight:600;}
+    td{padding:14px 16px;font-size:14px;border-bottom:1px solid rgba(26,58,85,.5);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(2,197,160,.03);}
+    .badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge-it{background:rgba(2,197,160,.15);color:#02C5A0;}
+    .badge-cse{background:rgba(168,85,247,.15);color:#A855F7;}
+    .badge-ece{background:rgba(255,159,67,.15);color:#FF9F43;}
+    .badge-eee{background:rgba(255,209,102,.15);color:#FFD166;}
+    .badge-mech{background:rgba(255,107,107,.15);color:#FF6B6B;}
+    .badge-civil{background:rgba(34,197,94,.15);color:#22C55E;}
+    .progress-mini{height:6px;background:#1A3A55;border-radius:3px;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;}
+    .progress-fill{height:100%;background:#02C5A0;border-radius:3px;transition:width .5s;}
+    .loading{text-align:center;padding:48px;color:#7A9BAE;font-size:14px;}
+    .loading-spin{font-size:32px;animation:spin 1s linear infinite;display:block;margin-bottom:12px;}
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .empty{text-align:center;padding:48px;color:#7A9BAE;}
+    .empty-icon{font-size:48px;margin-bottom:12px;}
+    .error-box{background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);border-radius:12px;padding:20px;text-align:center;color:#FF6B6B;}
+    .rank-badge{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+    .r1{background:rgba(255,183,0,.2);color:#FFB800;}
+    .r2{background:rgba(192,192,192,.2);color:#C0C0C0;}
+    .r3{background:rgba(205,127,50,.2);color:#CD7F32;}
+    .rn{background:rgba(122,155,174,.1);color:#7A9BAE;}
+    .dept-filter{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+    .dept-btn{padding:6px 14px;border-radius:20px;border:1px solid #1A3A55;background:transparent;color:#7A9BAE;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;transition:.2s;}
+    .dept-btn:hover{border-color:#02C5A0;color:#02C5A0;}
+    .dept-btn.active{background:rgba(2,197,160,.15);border-color:#02C5A0;color:#02C5A0;}
+  </style>
+
+<!-- BLUE WHITE THEME OVERRIDE -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --teal: #1a56db !important;
+  --navy: #f0f6ff !important;
+  --navy2: #ffffff !important;
+  --card: #ffffff !important;
+  --border: #dce8ff !important;
+  --text: #1e293b !important;
+  --muted: #64748b !important;
+  --accent: #f59e0b !important;
+  --red: #ef4444 !important;
+  --green: #16a34a !important;
+  --orange: #f97316 !important;
+  --purple: #7c3aed !important;
+}
+* { font-family: 'Outfit', sans-serif !important; }
+body { background: #f0f6ff !important; color: #1e293b !important; }
+
+/* SIDEBAR */
+.sidebar { background: #ffffff !important; border-right: 1.5px solid #dce8ff !important; box-shadow: 2px 0 12px rgba(26,86,219,0.06) !important; }
+.sidebar-brand, .sidebar-logo { border-bottom: 1.5px solid #dce8ff !important; }
+.brand-name, .sidebar-logo h2 { color: #1a56db !important; }
+.sidebar-logo p { color: #64748b !important; }
+.brand-icon { background: #1a56db !important; color: #fff !important; }
+.nav-label { color: #94a3b8 !important; }
+.nav-item { color: #64748b !important; }
+.nav-item:hover { background: rgba(26,86,219,0.06) !important; color: #1a56db !important; }
+.nav-item.active { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border-left: 3px solid #1a56db !important; }
+.nav-icon { color: inherit !important; }
+.sidebar-bottom { border-top: 1.5px solid #dce8ff !important; }
+
+/* USER INFO */
+.user-info, .student-info { background: #f0f6ff !important; border: 1px solid #dce8ff !important; }
+.user-name, .name { color: #1e293b !important; }
+.user-role, .dept { color: #64748b !important; }
+.user-avatar { background: #1a56db !important; color: #fff !important; }
+.logout-btn { background: rgba(239,68,68,0.08) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* TOPBAR */
+.topbar { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.06) !important; }
+.brand, .brand-name { color: #1a56db !important; }
+.admin-badge { background: rgba(239,68,68,0.1) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+.btn-refresh { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border: 1.5px solid rgba(26,86,219,0.2) !important; }
+.btn-logout, .btn-logout:not(:hover) { background: transparent !important; border: 1px solid #dce8ff !important; color: #64748b !important; }
+.btn-logout:hover { border-color: #ef4444 !important; color: #ef4444 !important; }
+
+/* MAIN AREA */
+.main { background: #f0f6ff !important; }
+.page-title { color: #1e293b !important; }
+.page-sub { color: #64748b !important; }
+
+/* CARDS */
+.card, .stat-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; box-shadow: 0 2px 12px rgba(26,86,219,0.06) !important; }
+.card-title, .card-header { color: #1e293b !important; }
+
+/* STATS */
+.stat-card::before { opacity: 1 !important; }
+.sc1::before { background: #1a56db !important; }
+.sc2::before { background: #f59e0b !important; }
+.sc3::before { background: #7c3aed !important; }
+.sc4::before { background: #16a34a !important; }
+.stat-val, .value { color: #1e293b !important; }
+.stat-lbl, .label, .sub { color: #64748b !important; }
+.stat-icon { filter: none !important; }
+
+/* TABLE */
+th { color: #64748b !important; border-bottom: 1.5px solid #dce8ff !important; background: #f8faff !important; }
+td { color: #1e293b !important; border-bottom: 1px solid #f0f6ff !important; }
+tr:hover td { background: rgba(26,86,219,0.02) !important; }
+table { background: #ffffff !important; }
+
+/* BADGES */
+.badge-it { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.badge-cse { background: rgba(124,58,237,0.1) !important; color: #7c3aed !important; }
+.badge-ece { background: rgba(249,115,22,0.1) !important; color: #f97316 !important; }
+.badge-eee { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge-mech { background: rgba(239,68,68,0.1) !important; color: #ef4444 !important; }
+.badge-civil { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+
+/* SEARCH */
+.search-bar { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.search-bar:focus { border-color: #1a56db !important; }
+.search-bar::placeholder { color: #94a3b8 !important; }
+
+/* DEPT FILTER BUTTONS */
+.dept-btn { border: 1px solid #dce8ff !important; color: #64748b !important; background: #ffffff !important; }
+.dept-btn:hover { border-color: #1a56db !important; color: #1a56db !important; }
+.dept-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* TASKS */
+.task-item { background: #f8faff !important; border: 1px solid #dce8ff !important; }
+.task-text { color: #1e293b !important; }
+.task-text.done { color: #94a3b8 !important; }
+.task-badge { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.task-check { border: 2px solid #dce8ff !important; }
+.task-check.done { background: #1a56db !important; border-color: #1a56db !important; }
+.add-task-form input, .add-task-form select { background: #f8faff !important; border: 1px solid #dce8ff !important; color: #1e293b !important; }
+.add-btn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* PROGRESS */
+.progress-bar { background: #f0f6ff !important; }
+.progress-fill { background: linear-gradient(90deg, #1a56db, #60a5fa) !important; }
+.progress-label { color: #1e293b !important; }
+
+/* SCORES TABLE */
+.scores-table th { color: #64748b !important; border-bottom: 1px solid #dce8ff !important; }
+.scores-table td { border-bottom: 1px solid #f0f6ff !important; color: #1e293b !important; }
+.badge.basic { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.badge.advanced { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge.quick { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* TOAST */
+.toast { background: rgba(26,86,219,0.95) !important; box-shadow: 0 8px 24px rgba(26,86,219,0.3) !important; }
+
+/* LOADING */
+.loading { color: #64748b !important; }
+.empty { color: #94a3b8 !important; }
+.error-box { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* RANK BADGES */
+.r1 { background: rgba(245,158,11,0.15) !important; color: #d97706 !important; }
+.r2 { background: rgba(148,163,184,0.15) !important; color: #64748b !important; }
+.r3 { background: rgba(180,83,9,0.15) !important; color: #b45309 !important; }
+.rn { background: rgba(100,116,139,0.1) !important; color: #64748b !important; }
+
+/* TOPIC CARDS */
+.topic-card { background: #ffffff !important; border: 2px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.04) !important; }
+.topic-card:hover { border-color: #1a56db !important; box-shadow: 0 8px 24px rgba(26,86,219,0.12) !important; }
+.topic-card.sel-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.t-name { color: #1e293b !important; }
+.t-count { color: #64748b !important; }
+
+/* LEVEL TABS */
+.level-tab { background: #ffffff !important; border: 2px solid #dce8ff !important; color: #64748b !important; }
+.level-tab.active-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.level-step { background: #ffffff !important; border: 2px solid #dce8ff !important; }
+.level-step.active { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.step-title { color: #1e293b !important; }
+.step-sub { color: #64748b !important; }
+.level-banner.basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.level-badge.basic { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.level-desc { color: #64748b !important; }
+.level-desc strong { color: #1e293b !important; }
+
+/* QUIZ */
+.quiz-header { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; }
+.question-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.option-btn { background: #f8faff !important; border: 2px solid #dce8ff !important; color: #1e293b !important; }
+.option-btn:hover { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.option-btn.selected { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.option-btn.correct { border-color: #16a34a !important; background: rgba(22,163,74,0.08) !important; color: #16a34a !important; }
+.option-btn.wrong { border-color: #ef4444 !important; background: rgba(239,68,68,0.08) !important; color: #ef4444 !important; }
+
+/* START BUTTON */
+.btn-start { background: #1a56db !important; color: #ffffff !important; }
+.btn-start:hover:not(:disabled) { background: #1447c0 !important; box-shadow: 0 8px 25px rgba(26,86,219,0.3) !important; }
+.btn-start:disabled { background: #dce8ff !important; color: #94a3b8 !important; }
+
+/* TOOLBAR */
+.toolbar { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.lang-select, select { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.run-btn, #runBtn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* COMPILER */
+.CodeMirror { background: #f8faff !important; color: #1e293b !important; }
+.output-area { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.output-area pre { color: #1e293b !important; }
+
+/* TIPS */
+.tip-card, .shortcut-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.tip-title, .shortcut-title { color: #1e293b !important; }
+.tip-text, .shortcut-text { color: #64748b !important; }
+.category-btn { background: #ffffff !important; border: 1.5px solid #dce8ff !important; color: #64748b !important; }
+.category-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* RESUME */
+.resume-section { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.section-title { color: #1e293b !important; }
+.form-control, .form-input, input[type=text], input[type=email], textarea { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.form-control:focus, input:focus, textarea:focus { border-color: #1a56db !important; }
+.btn-primary { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* AI WEAK AREA */
+.weak-area { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.15) !important; }
+.weak-area h4 { color: #ef4444 !important; }
+.strong-area { background: rgba(22,163,74,0.06) !important; border: 1px solid rgba(22,163,74,0.15) !important; }
+.strong-area h4 { color: #16a34a !important; }
+
+/* ADMIN LOGIN */
+#adminLoginScreen { background: #f0f6ff !important; }
+
+/* SCORE BARS */
+.step-status.done { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.step-status.current { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0f6ff; }
+::-webkit-scrollbar-thumb { background: #dce8ff; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #1a56db; }
+</style>
+
+</head>
+<body>
+
+<!-- ADMIN LOGIN SCREEN -->
+<div id="adminLoginScreen" style="position:fixed;inset:0;background:#050F1A;display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:#0D2137;border:1px solid #1A3A55;border-radius:20px;padding:40px;width:100%;max-width:400px;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:40px;margin-bottom:10px">🔐</div>
+      <h2 style="font-family:'Space Mono',monospace;color:#02C5A0;font-size:18px;">Admin Access</h2>
+      <p style="font-size:13px;color:#7A9BAE;margin-top:6px;">PEC Placement Portal</p>
+    </div>
+    <div id="adminLoginMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);color:#FF6B6B;"></div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:#7A9BAE;display:block;margin-bottom:6px;">USERNAME</label>
+      <input id="adminUser" type="text" placeholder="Enter admin username" style="width:100%;padding:12px 14px;background:#0A1929;border:1.5px solid #1A3A55;border-radius:10px;color:#E8F4F2;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;"/>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px;color:#7A9BAE;display:block;margin-bottom:6px;">PASSWORD</label>
+      <input id="adminPass" type="password" placeholder="Enter admin password" style="width:100%;padding:12px 14px;background:#0A1929;border:1.5px solid #1A3A55;border-radius:10px;color:#E8F4F2;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;"/>
+    </div>
+    <button onclick="doAdminLogin()" style="width:100%;padding:13px;background:linear-gradient(135deg,#02C5A0,#0891b2);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Login to Admin Panel</button>
+    <div style="text-align:center;margin-top:16px;">
+      <a href="index.html" style="color:#7A9BAE;font-size:12px;text-decoration:none;">← Back to Student Portal</a>
+    </div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="brand">🎯 PEC Placement Portal <span class="admin-badge">👨‍💼 ADMIN</span></div>
+  <div class="topbar-right">
+    <button class="btn-refresh" onclick="loadStudents()">🔄 Refresh Data</button>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">📊 Admin Dashboard</div>
+  <div class="page-sub">Monitor all students' placement preparation — Panimalar Engineering College</div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card sc1"><div class="stat-icon">👥</div><div class="stat-val" id="totalStudents">—</div><div class="stat-lbl">Total Students</div></div>
+    <div class="stat-card sc2"><div class="stat-icon">✅</div><div class="stat-val" id="totalTasks">—</div><div class="stat-lbl">Total Tasks Created</div></div>
+    <div class="stat-card sc3"><div class="stat-icon">🎯</div><div class="stat-val" id="totalTests">—</div><div class="stat-lbl">Tests Taken</div></div>
+    <div class="stat-card sc4"><div class="stat-icon">📈</div><div class="stat-val" id="avgProgress">—</div><div class="stat-lbl">Avg Completion %</div></div>
+  </div>
+
+  <!-- STUDENT TABLE -->
+  <div class="card">
+    <div class="card-title">
+      <span>👥 All Registered Students</span>
+      <span id="studentCount" style="font-size:13px;color:#7A9BAE;font-weight:400">Loading...</span>
+    </div>
+
+    <!-- FILTERS -->
+    <input class="search-bar" id="searchInput" placeholder="🔍 Search by name, email or roll number..." oninput="filterStudents()"/>
+    <div class="dept-filter" id="deptFilter">
+      <button class="dept-btn active" onclick="filterDept('All',this)">All</button>
+      <button class="dept-btn" onclick="filterDept('IT',this)">IT</button>
+      <button class="dept-btn" onclick="filterDept('CSE',this)">CSE</button>
+      <button class="dept-btn" onclick="filterDept('ECE',this)">ECE</button>
+      <button class="dept-btn" onclick="filterDept('EEE',this)">EEE</button>
+      <button class="dept-btn" onclick="filterDept('MECH',this)">MECH</button>
+      <button class="dept-btn" onclick="filterDept('CIVIL',this)">CIVIL</button>
+    </div>
+
+    <div id="tableWrap">
+      <div class="loading"><span class="loading-spin">⚙️</span>Loading students...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'pec@2024';
+
+function doAdminLogin(){
+  const u = document.getElementById('adminUser').value.trim();
+  const p = document.getElementById('adminPass').value.trim();
+  const msg = document.getElementById('adminLoginMsg');
+  if(u === ADMIN_USER && p === ADMIN_PASS){
+    sessionStorage.setItem('admin_auth','yes');
+    document.getElementById('adminLoginScreen').style.display='none';
+    loadStudents();
+  } else {
+    msg.style.display='block';
+    msg.textContent='❌ Wrong username or password!';
+  }
+}
+
+document.addEventListener('keypress', e=>{ if(e.key==='Enter') doAdminLogin(); });
+
+// Check if already logged in
+if(sessionStorage.getItem('admin_auth')==='yes'){
+  document.getElementById('adminLoginScreen').style.display='none';
+}
+
+let allStudents = [];
+let currentDept = 'All';
+
+async function loadStudents(){
+  document.getElementById('tableWrap').innerHTML='<div class="loading"><span class="loading-spin">⚙️</span>Loading students...</div>';
+  try{
+    const res = await fetch(window.location.origin + '/api/admin/students');
+    const data = await res.json();
+    if(data.success){
+      allStudents = data.students;
+
+      // Update stats
+      document.getElementById('totalStudents').textContent = data.total;
+      document.getElementById('studentCount').textContent = data.total + ' students found';
+
+      let totalTasks=0, totalTests=0, totalPct=0;
+      data.students.forEach(s=>{
+        totalTasks += s.total_tasks||0;
+        totalTests += s.tests_taken||0;
+        const done = s.completed_tasks||0;
+        const total = s.total_tasks||0;
+        totalPct += total>0 ? Math.round(done/total*100) : 0;
+      });
+      document.getElementById('totalTasks').textContent = totalTasks;
+      document.getElementById('totalTests').textContent = totalTests;
+      document.getElementById('avgProgress').textContent = data.total>0 ? Math.round(totalPct/data.total)+'%' : '0%';
+
+      renderTable(allStudents);
+    }
+  } catch(err){
+    document.getElementById('tableWrap').innerHTML=`
+      <div class="error-box">
+        <div style="font-size:32px;margin-bottom:10px">❌</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Cannot connect to server!</div>
+        <div style="font-size:13px">Make sure Flask is running: <strong>python app.py</strong></div>
+      </div>`;
+  }
+}
+
+function renderTable(students){
+  if(students.length===0){
+    document.getElementById('tableWrap').innerHTML=`<div class="empty"><div class="empty-icon">👥</div><div>No students found!</div></div>`;
+    return;
+  }
+  const deptColors = {IT:'badge-it',CSE:'badge-cse',ECE:'badge-ece',EEE:'badge-eee',MECH:'badge-mech',CIVIL:'badge-civil'};
+  let html=`<table>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Roll No</th>
+      <th>Email</th>
+      <th>Dept</th>
+      <th>Sem</th>
+      <th>Tasks</th>
+      <th>Tests</th>
+      <th>Progress</th>
+      <th>Joined</th>
+    </tr>`;
+  students.forEach((s,i)=>{
+    const done = s.completed_tasks||0;
+    const total = s.total_tasks||0;
+    const pct = total>0?Math.round(done/total*100):0;
+    const col = pct>=70?'#22C55E':pct>=40?'#FFD166':'#7A9BAE';
+    const rankClass = i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+    const deptClass = deptColors[s.department]||'badge-it';
+    const joined = s.created_at ? new Date(s.created_at).toLocaleDateString('en-IN') : '—';
+    html+=`<tr>
+      <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+      <td style="font-weight:600">${s.name}</td>
+      <td style="color:#7A9BAE;font-family:monospace">${s.roll_no||'—'}</td>
+      <td style="color:#7A9BAE;font-size:13px">${s.email}</td>
+      <td><span class="badge ${deptClass}">${s.department||'IT'}</span></td>
+      <td style="text-align:center">Sem ${s.semester||6}</td>
+      <td style="color:#02C5A0;font-weight:700">${done}/${total}</td>
+      <td style="color:#A855F7;font-weight:700">${s.tests_taken||0}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="progress-mini"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div>
+          <span style="font-size:12px;color:${col};font-weight:700">${pct}%</span>
+        </div>
+      </td>
+      <td style="font-size:12px;color:#7A9BAE">${joined}</td>
+    </tr>`;
+  });
+  html+='</table>';
+  document.getElementById('tableWrap').innerHTML=html;
+}
+
+function filterStudents(){
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = allStudents.filter(s=>
+    s.name.toLowerCase().includes(q)||
+    s.email.toLowerCase().includes(q)||
+    (s.roll_no&&s.roll_no.toLowerCase().includes(q))
+  );
+  if(currentDept!=='All') filtered=filtered.filter(s=>s.department===currentDept);
+  renderTable(filtered);
+}
+
+function filterDept(dept, el){
+  currentDept = dept;
+  document.querySelectorAll('.dept-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  filterStudents();
+}
+
+function logout(){
+  sessionStorage.removeItem('admin_auth');
+  window.location.href='index.html';
+}
+
+// Load on start only if authenticated
+if(sessionStorage.getItem('admin_auth')==='yes'){
+  loadStudents();
+}
+</script>
+</body>
+</html>

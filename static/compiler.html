@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PEC Placement Portal — Code Compiler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <!-- CodeMirror Editor -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #02C5A0; --navy: #050F1A; --navy2: #0A1929;
+      --card: #0D2137; --border: #1A3A55; --text: #E8F4F2; --muted: #7A9BAE;
+      --accent: #FFD166; --red: #FF6B6B; --green: #22C55E; --orange: #FF9F43;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--text); display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { width: 240px; min-width: 240px; background: var(--navy2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+    .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 0 20px 24px; border-bottom: 1px solid var(--border); }
+    .brand-icon { width: 36px; height: 36px; background: var(--teal); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .brand-name { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--teal); line-height:1.4; }
+    .nav-section { padding: 20px 12px 8px; }
+    .nav-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; padding: 0 8px; margin-bottom: 8px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 500; color: var(--muted); margin-bottom: 2px; text-decoration: none; }
+    .nav-item:hover { background: rgba(2,197,160,0.08); color: var(--text); }
+    .nav-item.active { background: rgba(2,197,160,0.15); color: var(--teal); }
+    .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--card); }
+    .user-avatar { width: 34px; height: 34px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--navy); font-size: 14px; }
+    .user-name { font-size: 14px; font-weight: 600; }
+    .user-role { font-size: 11px; color: var(--muted); }
+
+    /* MAIN */
+    .main { margin-left: 240px; flex: 1; padding: 32px; display: flex; flex-direction: column; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .page-title { font-size: 26px; font-weight: 700; }
+    .page-sub { font-size: 14px; color: var(--muted); margin-top: 2px; }
+    .btn-logout { padding: 8px 16px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; transition: 0.2s; }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* TOOLBAR */
+    .toolbar {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px 14px 0 0; padding: 14px 18px;
+      border-bottom: none;
+    }
+
+    .lang-select {
+      padding: 8px 14px; background: var(--navy2);
+      border: 1.5px solid var(--border); border-radius: 8px;
+      color: var(--text); font-size: 14px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; outline: none;
+    }
+    .lang-select:focus { border-color: var(--teal); }
+
+    .toolbar-label { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+    .btn-run {
+      margin-left: auto; padding: 10px 28px;
+      background: var(--teal); color: var(--navy);
+      border: none; border-radius: 8px; font-size: 15px; font-weight: 700;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-run:hover { background: #03E5B8; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(2,197,160,0.3); }
+    .btn-run:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-clear {
+      padding: 10px 18px; background: transparent;
+      border: 1.5px solid var(--border); color: var(--muted);
+      border-radius: 8px; font-size: 14px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: 0.2s;
+    }
+    .btn-clear:hover { border-color: var(--red); color: var(--red); }
+
+    .btn-sample {
+      padding: 10px 18px; background: transparent;
+      border: 1.5px solid var(--border); color: var(--muted);
+      border-radius: 8px; font-size: 14px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: 0.2s;
+    }
+    .btn-sample:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* EDITOR */
+    .editor-wrapper {
+      border: 1px solid var(--border); border-top: none;
+      flex: 1; min-height: 340px;
+    }
+
+    .CodeMirror {
+      height: 340px !important;
+      font-family: 'Space Mono', monospace !important;
+      font-size: 14px !important;
+      line-height: 1.7 !important;
+    }
+
+    /* INPUT BOX */
+    .input-section {
+      margin-top: 16px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+    }
+    .input-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stdin-input {
+      width: 100%; padding: 10px 14px;
+      background: var(--navy2); border: 1.5px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-family: 'Space Mono', monospace; font-size: 13px;
+      outline: none; resize: vertical; min-height: 50px;
+    }
+    .stdin-input:focus { border-color: var(--teal); }
+
+    /* OUTPUT */
+    .output-section {
+      margin-top: 16px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .output-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 18px; border-bottom: 1px solid var(--border);
+    }
+    .output-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .output-badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .badge-success { background: rgba(34,197,94,0.15); color: var(--green); }
+    .badge-error { background: rgba(255,107,107,0.15); color: var(--red); }
+    .badge-running { background: rgba(255,209,102,0.15); color: var(--accent); }
+    .badge-idle { background: rgba(122,155,174,0.15); color: var(--muted); }
+
+    .output-body {
+      padding: 16px 18px; min-height: 100px;
+      font-family: 'Space Mono', monospace; font-size: 13px;
+      line-height: 1.8; white-space: pre-wrap; color: var(--text);
+    }
+    .output-body.error-text { color: var(--red); }
+    .output-body.idle-text { color: var(--muted); font-style: italic; font-family: 'DM Sans', sans-serif; }
+
+    .exec-time { font-size: 12px; color: var(--muted); }
+
+    /* SAMPLE TEMPLATES */
+    .templates-bar {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .template-btn {
+      padding: 7px 16px; background: var(--card);
+      border: 1.5px solid var(--border); border-radius: 20px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      color: var(--muted); transition: 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .template-btn:hover { border-color: var(--teal); color: var(--teal); background: rgba(2,197,160,0.06); }
+
+    /* SPINNER */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 16px; height: 16px; border: 2px solid var(--navy); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+  </style>
+
+<!-- BLUE WHITE THEME OVERRIDE -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --teal: #1a56db !important;
+  --navy: #f0f6ff !important;
+  --navy2: #ffffff !important;
+  --card: #ffffff !important;
+  --border: #dce8ff !important;
+  --text: #1e293b !important;
+  --muted: #64748b !important;
+  --accent: #f59e0b !important;
+  --red: #ef4444 !important;
+  --green: #16a34a !important;
+  --orange: #f97316 !important;
+  --purple: #7c3aed !important;
+}
+* { font-family: 'Outfit', sans-serif !important; }
+body { background: #f0f6ff !important; color: #1e293b !important; }
+
+/* SIDEBAR */
+.sidebar { background: #ffffff !important; border-right: 1.5px solid #dce8ff !important; box-shadow: 2px 0 12px rgba(26,86,219,0.06) !important; }
+.sidebar-brand, .sidebar-logo { border-bottom: 1.5px solid #dce8ff !important; }
+.brand-name, .sidebar-logo h2 { color: #1a56db !important; }
+.sidebar-logo p { color: #64748b !important; }
+.brand-icon { background: #1a56db !important; color: #fff !important; }
+.nav-label { color: #94a3b8 !important; }
+.nav-item { color: #64748b !important; }
+.nav-item:hover { background: rgba(26,86,219,0.06) !important; color: #1a56db !important; }
+.nav-item.active { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border-left: 3px solid #1a56db !important; }
+.nav-icon { color: inherit !important; }
+.sidebar-bottom { border-top: 1.5px solid #dce8ff !important; }
+
+/* USER INFO */
+.user-info, .student-info { background: #f0f6ff !important; border: 1px solid #dce8ff !important; }
+.user-name, .name { color: #1e293b !important; }
+.user-role, .dept { color: #64748b !important; }
+.user-avatar { background: #1a56db !important; color: #fff !important; }
+.logout-btn { background: rgba(239,68,68,0.08) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* TOPBAR */
+.topbar { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.06) !important; }
+.brand, .brand-name { color: #1a56db !important; }
+.admin-badge { background: rgba(239,68,68,0.1) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+.btn-refresh { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border: 1.5px solid rgba(26,86,219,0.2) !important; }
+.btn-logout, .btn-logout:not(:hover) { background: transparent !important; border: 1px solid #dce8ff !important; color: #64748b !important; }
+.btn-logout:hover { border-color: #ef4444 !important; color: #ef4444 !important; }
+
+/* MAIN AREA */
+.main { background: #f0f6ff !important; }
+.page-title { color: #1e293b !important; }
+.page-sub { color: #64748b !important; }
+
+/* CARDS */
+.card, .stat-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; box-shadow: 0 2px 12px rgba(26,86,219,0.06) !important; }
+.card-title, .card-header { color: #1e293b !important; }
+
+/* STATS */
+.stat-card::before { opacity: 1 !important; }
+.sc1::before { background: #1a56db !important; }
+.sc2::before { background: #f59e0b !important; }
+.sc3::before { background: #7c3aed !important; }
+.sc4::before { background: #16a34a !important; }
+.stat-val, .value { color: #1e293b !important; }
+.stat-lbl, .label, .sub { color: #64748b !important; }
+.stat-icon { filter: none !important; }
+
+/* TABLE */
+th { color: #64748b !important; border-bottom: 1.5px solid #dce8ff !important; background: #f8faff !important; }
+td { color: #1e293b !important; border-bottom: 1px solid #f0f6ff !important; }
+tr:hover td { background: rgba(26,86,219,0.02) !important; }
+table { background: #ffffff !important; }
+
+/* BADGES */
+.badge-it { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.badge-cse { background: rgba(124,58,237,0.1) !important; color: #7c3aed !important; }
+.badge-ece { background: rgba(249,115,22,0.1) !important; color: #f97316 !important; }
+.badge-eee { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge-mech { background: rgba(239,68,68,0.1) !important; color: #ef4444 !important; }
+.badge-civil { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+
+/* SEARCH */
+.search-bar { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.search-bar:focus { border-color: #1a56db !important; }
+.search-bar::placeholder { color: #94a3b8 !important; }
+
+/* DEPT FILTER BUTTONS */
+.dept-btn { border: 1px solid #dce8ff !important; color: #64748b !important; background: #ffffff !important; }
+.dept-btn:hover { border-color: #1a56db !important; color: #1a56db !important; }
+.dept-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* TASKS */
+.task-item { background: #f8faff !important; border: 1px solid #dce8ff !important; }
+.task-text { color: #1e293b !important; }
+.task-text.done { color: #94a3b8 !important; }
+.task-badge { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.task-check { border: 2px solid #dce8ff !important; }
+.task-check.done { background: #1a56db !important; border-color: #1a56db !important; }
+.add-task-form input, .add-task-form select { background: #f8faff !important; border: 1px solid #dce8ff !important; color: #1e293b !important; }
+.add-btn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* PROGRESS */
+.progress-bar { background: #f0f6ff !important; }
+.progress-fill { background: linear-gradient(90deg, #1a56db, #60a5fa) !important; }
+.progress-label { color: #1e293b !important; }
+
+/* SCORES TABLE */
+.scores-table th { color: #64748b !important; border-bottom: 1px solid #dce8ff !important; }
+.scores-table td { border-bottom: 1px solid #f0f6ff !important; color: #1e293b !important; }
+.badge.basic { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.badge.advanced { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge.quick { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* TOAST */
+.toast { background: rgba(26,86,219,0.95) !important; box-shadow: 0 8px 24px rgba(26,86,219,0.3) !important; }
+
+/* LOADING */
+.loading { color: #64748b !important; }
+.empty { color: #94a3b8 !important; }
+.error-box { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* RANK BADGES */
+.r1 { background: rgba(245,158,11,0.15) !important; color: #d97706 !important; }
+.r2 { background: rgba(148,163,184,0.15) !important; color: #64748b !important; }
+.r3 { background: rgba(180,83,9,0.15) !important; color: #b45309 !important; }
+.rn { background: rgba(100,116,139,0.1) !important; color: #64748b !important; }
+
+/* TOPIC CARDS */
+.topic-card { background: #ffffff !important; border: 2px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.04) !important; }
+.topic-card:hover { border-color: #1a56db !important; box-shadow: 0 8px 24px rgba(26,86,219,0.12) !important; }
+.topic-card.sel-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.t-name { color: #1e293b !important; }
+.t-count { color: #64748b !important; }
+
+/* LEVEL TABS */
+.level-tab { background: #ffffff !important; border: 2px solid #dce8ff !important; color: #64748b !important; }
+.level-tab.active-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.level-step { background: #ffffff !important; border: 2px solid #dce8ff !important; }
+.level-step.active { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.step-title { color: #1e293b !important; }
+.step-sub { color: #64748b !important; }
+.level-banner.basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.level-badge.basic { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.level-desc { color: #64748b !important; }
+.level-desc strong { color: #1e293b !important; }
+
+/* QUIZ */
+.quiz-header { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; }
+.question-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.option-btn { background: #f8faff !important; border: 2px solid #dce8ff !important; color: #1e293b !important; }
+.option-btn:hover { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.option-btn.selected { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.option-btn.correct { border-color: #16a34a !important; background: rgba(22,163,74,0.08) !important; color: #16a34a !important; }
+.option-btn.wrong { border-color: #ef4444 !important; background: rgba(239,68,68,0.08) !important; color: #ef4444 !important; }
+
+/* START BUTTON */
+.btn-start { background: #1a56db !important; color: #ffffff !important; }
+.btn-start:hover:not(:disabled) { background: #1447c0 !important; box-shadow: 0 8px 25px rgba(26,86,219,0.3) !important; }
+.btn-start:disabled { background: #dce8ff !important; color: #94a3b8 !important; }
+
+/* TOOLBAR */
+.toolbar { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.lang-select, select { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.run-btn, #runBtn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* COMPILER */
+.CodeMirror { background: #f8faff !important; color: #1e293b !important; }
+.output-area { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.output-area pre { color: #1e293b !important; }
+
+/* TIPS */
+.tip-card, .shortcut-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.tip-title, .shortcut-title { color: #1e293b !important; }
+.tip-text, .shortcut-text { color: #64748b !important; }
+.category-btn { background: #ffffff !important; border: 1.5px solid #dce8ff !important; color: #64748b !important; }
+.category-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* RESUME */
+.resume-section { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.section-title { color: #1e293b !important; }
+.form-control, .form-input, input[type=text], input[type=email], textarea { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.form-control:focus, input:focus, textarea:focus { border-color: #1a56db !important; }
+.btn-primary { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* AI WEAK AREA */
+.weak-area { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.15) !important; }
+.weak-area h4 { color: #ef4444 !important; }
+.strong-area { background: rgba(22,163,74,0.06) !important; border: 1px solid rgba(22,163,74,0.15) !important; }
+.strong-area h4 { color: #16a34a !important; }
+
+/* ADMIN LOGIN */
+#adminLoginScreen { background: #f0f6ff !important; }
+
+/* SCORE BARS */
+.step-status.done { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.step-status.current { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0f6ff; }
+::-webkit-scrollbar-thumb { background: #dce8ff; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #1a56db; }
+</style>
+
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">🎯</div>
+    <div class="brand-name" style="font-size:13px;line-height:1.3">PEC<br>Placement Portal</div>
+  </div>
+    <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">✅</span> Task Manager</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">🤖</span> AI Detector</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📈</span> My Progress</a>
+    <a class="nav-item " href="test.html"><span class="nav-icon">🧪</span> Take a Test</a>
+    <a class="nav-item" href="dashboard.html">
+      <span class="nav-icon">🏠</span> Dashboard
+    </a>
+    <a class="nav-item " href="tips.html"><span class="nav-icon">⚡</span> Shortcut Tips</a>
+    <a class="nav-item " href="resume.html"><span class="nav-icon">📄</span> Resume Builder</a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-info">
+      <div class="user-avatar" id="avatarInitial">M</div>
+      <div>
+        <div class="user-name" id="sidebarName">Midhun</div>
+        <div class="user-role">B.Tech IT · 6th Sem</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">💻 Code Compiler</div>
+      <div class="page-sub">Write, run and test your code — right here, no other website needed!</div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- TEMPLATE BUTTONS -->
+  <div class="templates-bar">
+    <span style="font-size:13px;color:var(--muted);line-height:2;margin-right:4px">Quick templates:</span>
+    <button class="template-btn" onclick="loadTemplate('hello')">👋 Hello World</button>
+    <button class="template-btn" onclick="loadTemplate('fibonacci')">🔢 Fibonacci</button>
+    <button class="template-btn" onclick="loadTemplate('factorial')">❗ Factorial</button>
+    <button class="template-btn" onclick="loadTemplate('sort')">📊 Bubble Sort</button>
+    <button class="template-btn" onclick="loadTemplate('reverse')">🔄 Reverse String</button>
+    <button class="template-btn" onclick="loadTemplate('prime')">🔢 Prime Check</button>
+    <button class="template-btn" onclick="loadTemplate('pattern')">⭐ Star Pattern</button>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <span class="toolbar-label">Language:</span>
+    <select class="lang-select" id="langSelect" onchange="changeLanguage()">
+      <option value="python">🐍 Python</option>
+      <option value="java">☕ Java</option>
+      <option value="c">🔵 C</option>
+      <option value="cpp">⚡ C++</option>
+    </select>
+    <button class="btn-sample" onclick="clearEditor()">🗑️ Clear</button>
+    <button class="btn-run" id="runBtn" onclick="runCode()">▶ Run Code</button>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="editor-wrapper">
+    <textarea id="codeEditor"></textarea>
+  </div>
+
+  <!-- STDIN INPUT -->
+  <div class="input-section">
+    <div class="input-label">📥 Input (stdin) — optional</div>
+    <textarea class="stdin-input" id="stdinInput" placeholder="Enter input for your program here (if needed)..."></textarea>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="output-section">
+    <div class="output-header">
+      <div class="output-title">
+        📤 Output
+        <span class="output-badge badge-idle" id="statusBadge">Idle</span>
+      </div>
+      <div class="exec-time" id="execTime"></div>
+    </div>
+    <div class="output-body idle-text" id="outputBody">
+      Your output will appear here after you click "Run Code" ▶
+    </div>
+  </div>
+</main>
+
+<script>
+// Auth
+const token = localStorage.getItem('pt_token');
+const student = JSON.parse(localStorage.getItem('pt_student') || '{}');
+const currentEmail = student.email || '';
+if (!token) window.location.href = 'index.html';
+
+const user = { name: student.name || 'Student', department: student.department || 'IT', semester: student.semester || 6 };
+const firstName = user.name.split(' ')[0];
+document.getElementById('sidebarName').textContent = firstName;
+document.getElementById('avatarInitial').textContent = firstName[0].toUpperCase();
+function logout() { localStorage.removeItem('pt_token'); localStorage.removeItem('pt_student'); window.location.href = 'index.html'; }
+
+// ─── EDITOR SETUP ───
+const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+  theme: 'dracula',
+  lineNumbers: true,
+  indentUnit: 4,
+  tabSize: 4,
+  indentWithTabs: false,
+  lineWrapping: false,
+  autofocus: true,
+  extraKeys: { "Tab": "indentMore", "Shift-Tab": "indentLess" }
+});
+
+// ─── TEMPLATES ───
+const TEMPLATES = {
+  python: {
+    hello: `# Hello World in Python\nprint("Hello, World!")\nprint("Welcome to PEC Placement Portal Compiler!")`,
+    fibonacci: `# Fibonacci Series in Python\nn = int(input("Enter number of terms: "))\na, b = 0, 1\nfor i in range(n):\n    print(a, end=" ")\n    a, b = b, a + b\nprint()`,
+    factorial: `# Factorial using recursion\ndef factorial(n):\n    if n == 0 or n == 1:\n        return 1\n    return n * factorial(n - 1)\n\nn = int(input("Enter a number: "))\nprint(f"Factorial of {n} =", factorial(n))`,
+    sort: `# Bubble Sort in Python\narr = list(map(int, input("Enter numbers separated by space: ").split()))\nn = len(arr)\nfor i in range(n):\n    for j in range(0, n-i-1):\n        if arr[j] > arr[j+1]:\n            arr[j], arr[j+1] = arr[j+1], arr[j]\nprint("Sorted array:", arr)`,
+    reverse: `# Reverse a String\ns = input("Enter a string: ")\nprint("Reversed:", s[::-1])`,
+    prime: `# Prime Number Check\ndef is_prime(n):\n    if n < 2: return False\n    for i in range(2, int(n**0.5)+1):\n        if n % i == 0: return False\n    return True\n\nn = int(input("Enter a number: "))\nif is_prime(n):\n    print(f"{n} is a Prime number")\nelse:\n    print(f"{n} is NOT a Prime number")`,
+    pattern: `# Star Pattern\nn = int(input("Enter rows: "))\nfor i in range(1, n+1):\n    print("* " * i)`,
+  },
+  java: {
+    hello: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n        System.out.println("Welcome to PEC Placement Portal Compiler!");\n    }\n}`,
+    fibonacci: `import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        int a = 0, b = 1;\n        for (int i = 0; i < n; i++) {\n            System.out.print(a + " ");\n            int c = a + b;\n            a = b;\n            b = c;\n        }\n    }\n}`,
+    factorial: `import java.util.Scanner;\npublic class Main {\n    static long factorial(int n) {\n        if (n <= 1) return 1;\n        return n * factorial(n - 1);\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        System.out.println("Factorial of " + n + " = " + factorial(n));\n    }\n}`,
+    sort: `import java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        int[] arr = {64, 34, 25, 12, 22, 11, 90};\n        int n = arr.length;\n        for (int i = 0; i < n-1; i++)\n            for (int j = 0; j < n-i-1; j++)\n                if (arr[j] > arr[j+1]) {\n                    int t = arr[j]; arr[j] = arr[j+1]; arr[j+1] = t;\n                }\n        System.out.println("Sorted: " + Arrays.toString(arr));\n    }\n}`,
+    reverse: `import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String s = sc.nextLine();\n        System.out.println("Reversed: " + new StringBuilder(s).reverse());\n    }\n}`,
+    prime: `import java.util.Scanner;\npublic class Main {\n    static boolean isPrime(int n) {\n        if (n < 2) return false;\n        for (int i = 2; i <= Math.sqrt(n); i++)\n            if (n % i == 0) return false;\n        return true;\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        System.out.println(n + (isPrime(n) ? " is Prime" : " is NOT Prime"));\n    }\n}`,
+    pattern: `import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        for (int i = 1; i <= n; i++) {\n            for (int j = 0; j < i; j++) System.out.print("* ");\n            System.out.println();\n        }\n    }\n}`,
+  },
+  c: {
+    hello: `#include <stdio.h>\nint main() {\n    printf("Hello, World!\\n");\n    printf("Welcome to PEC Placement Portal Compiler!\\n");\n    return 0;\n}`,
+    fibonacci: `#include <stdio.h>\nint main() {\n    int n, a = 0, b = 1, c;\n    scanf("%d", &n);\n    for (int i = 0; i < n; i++) {\n        printf("%d ", a);\n        c = a + b; a = b; b = c;\n    }\n    return 0;\n}`,
+    factorial: `#include <stdio.h>\nlong factorial(int n) {\n    if (n <= 1) return 1;\n    return n * factorial(n - 1);\n}\nint main() {\n    int n;\n    scanf("%d", &n);\n    printf("Factorial = %ld\\n", factorial(n));\n    return 0;\n}`,
+    sort: `#include <stdio.h>\nint main() {\n    int arr[] = {64, 34, 25, 12, 22};\n    int n = 5;\n    for (int i = 0; i < n-1; i++)\n        for (int j = 0; j < n-i-1; j++)\n            if (arr[j] > arr[j+1]) {\n                int t = arr[j]; arr[j]=arr[j+1]; arr[j+1]=t;\n            }\n    printf("Sorted: ");\n    for (int i = 0; i < n; i++) printf("%d ", arr[i]);\n    return 0;\n}`,
+    reverse: `#include <stdio.h>\n#include <string.h>\nint main() {\n    char s[100];\n    scanf("%s", s);\n    int n = strlen(s);\n    for (int i = n-1; i >= 0; i--) printf("%c", s[i]);\n    printf("\\n");\n    return 0;\n}`,
+    prime: `#include <stdio.h>\n#include <math.h>\nint isPrime(int n) {\n    if (n < 2) return 0;\n    for (int i = 2; i <= sqrt(n); i++)\n        if (n % i == 0) return 0;\n    return 1;\n}\nint main() {\n    int n;\n    scanf("%d", &n);\n    printf("%d is %s\\n", n, isPrime(n) ? "Prime" : "NOT Prime");\n    return 0;\n}`,
+    pattern: `#include <stdio.h>\nint main() {\n    int n;\n    scanf("%d", &n);\n    for (int i = 1; i <= n; i++) {\n        for (int j = 0; j < i; j++) printf("* ");\n        printf("\\n");\n    }\n    return 0;\n}`,
+  },
+  cpp: {
+    hello: `#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello, World!" << endl;\n    cout << "Welcome to PEC Placement Portal Compiler!" << endl;\n    return 0;\n}`,
+    fibonacci: `#include <iostream>\nusing namespace std;\nint main() {\n    int n, a = 0, b = 1;\n    cin >> n;\n    for (int i = 0; i < n; i++) {\n        cout << a << " ";\n        int c = a + b; a = b; b = c;\n    }\n    return 0;\n}`,
+    factorial: `#include <iostream>\nusing namespace std;\nlong long factorial(int n) {\n    if (n <= 1) return 1;\n    return n * factorial(n-1);\n}\nint main() {\n    int n; cin >> n;\n    cout << "Factorial = " << factorial(n) << endl;\n    return 0;\n}`,
+    sort: `#include <iostream>\n#include <algorithm>\nusing namespace std;\nint main() {\n    int arr[] = {64, 34, 25, 12, 22};\n    int n = 5;\n    sort(arr, arr + n);\n    cout << "Sorted: ";\n    for (int i = 0; i < n; i++) cout << arr[i] << " ";\n    return 0;\n}`,
+    reverse: `#include <iostream>\n#include <algorithm>\nusing namespace std;\nint main() {\n    string s; cin >> s;\n    reverse(s.begin(), s.end());\n    cout << "Reversed: " << s << endl;\n    return 0;\n}`,
+    prime: `#include <iostream>\n#include <cmath>\nusing namespace std;\nbool isPrime(int n) {\n    if (n < 2) return false;\n    for (int i = 2; i <= sqrt(n); i++)\n        if (n % i == 0) return false;\n    return true;\n}\nint main() {\n    int n; cin >> n;\n    cout << n << (isPrime(n) ? " is Prime" : " is NOT Prime") << endl;\n    return 0;\n}`,
+    pattern: `#include <iostream>\nusing namespace std;\nint main() {\n    int n; cin >> n;\n    for (int i = 1; i <= n; i++) {\n        for (int j = 0; j < i; j++) cout << "* ";\n        cout << endl;\n    }\n    return 0;\n}`,
+  }
+};
+
+// Judge0 language IDs
+const LANG_IDS = { python: 71, java: 62, c: 50, cpp: 54 };
+
+// Piston API language mapping (free, no API key needed)
+const PISTON_LANGS = {
+  python: { language: 'python', version: '3.10.0' },
+  java:   { language: 'java',   version: '15.0.2' },
+  c:      { language: 'c',      version: '10.2.0' },
+  cpp:    { language: 'cpp',    version: '10.2.0' }
+};
+const LANG_MODES = { python: 'python', java: 'text/x-java', c: 'text/x-csrc', cpp: 'text/x-c++src' };
+
+let currentLang = 'python';
+
+// Load default
+editor.setOption('mode', LANG_MODES[currentLang]);
+loadTemplate('hello');
+
+function changeLanguage() {
+  currentLang = document.getElementById('langSelect').value;
+  editor.setOption('mode', LANG_MODES[currentLang]);
+  loadTemplate('hello');
+}
+
+function loadTemplate(name) {
+  const code = TEMPLATES[currentLang][name];
+  if (code) editor.setValue(code);
+  // Auto-set stdin hints
+  const hints = {
+    fibonacci: '7', factorial: '5', sort: '5 3 8 1 4',
+    reverse: 'hello', prime: '17', pattern: '5', hello: ''
+  };
+  document.getElementById('stdinInput').value = hints[name] || '';
+}
+
+function clearEditor() {
+  editor.setValue('');
+  document.getElementById('stdinInput').value = '';
+  setOutput('idle', '', 'Your output will appear here after you click "Run Code" ▶');
+}
+
+function setOutput(status, time, text, isError = false) {
+  const badge = document.getElementById('statusBadge');
+  const body = document.getElementById('outputBody');
+  const execTime = document.getElementById('execTime');
+
+  badge.className = 'output-badge';
+  body.className = 'output-body';
+
+  if (status === 'idle') { badge.classList.add('badge-idle'); badge.textContent = 'Idle'; body.classList.add('idle-text'); }
+  else if (status === 'running') { badge.classList.add('badge-running'); badge.textContent = 'Running...'; }
+  else if (status === 'success') { badge.classList.add('badge-success'); badge.textContent = '✓ Success'; }
+  else if (status === 'error') { badge.classList.add('badge-error'); badge.textContent = '✗ Error'; body.classList.add('error-text'); }
+
+  body.textContent = text;
+  execTime.textContent = time;
+}
+
+async function runCode() {
+  const code = editor.getValue().trim();
+  if (!code) { setOutput('error', '', '⚠️ Please write some code first!', true); return; }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Running...';
+  setOutput('running', '', '⏳ Compiling and running your code...');
+
+  const stdin = document.getElementById('stdinInput').value;
+  const langId = LANG_IDS[currentLang];
+  const startTime = Date.now();
+
+  try {
+    // Use Piston API (free, no key needed, works always!)
+    const lang = PISTON_LANGS[currentLang];
+    const pistonRes = await fetch('https://emkc.org/api/v2/piston/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        language: lang.language,
+        version: lang.version,
+        files: [{ content: code }],
+        stdin: stdin
+      })
+    });
+
+    if (!pistonRes.ok) throw new Error('API_UNAVAILABLE');
+    const result = await pistonRes.json();
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+    const run = result.run || {};
+
+    if (run.stderr && run.stderr.trim()) {
+      setOutput('error', '', '❌ Error:\n' + run.stderr.trimEnd(), true);
+    } else if (run.output !== undefined) {
+      setOutput('success', `Execution time: ${elapsed}s`, run.output.trimEnd() || '(No output)');
+    } else {
+      setOutput('success', `Done in ${elapsed}s`, '(No output)');
+    }
+  } catch (e) {
+    // Fallback: run Python locally using simple eval for basic programs
+    runLocalFallback(code);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '▶ Run Code';
+}
+
+function runLocalFallback(code) {
+  // Simple local Python interpreter for basic patterns
+  const output = [];
+  try {
+    // Replace Python print statements and evaluate
+    let lines = code.split('\n');
+    let localOutput = '';
+
+    // Check for simple print-only programs
+    const printLines = lines.filter(l => l.trim().startsWith('print('));
+    if (printLines.length > 0 && !code.includes('input(')) {
+      // Safe eval for print-only Python code
+      printLines.forEach(line => {
+        try {
+          const match = line.match(/print\((.*)\)/s);
+          if (match) {
+            const expr = match[1].replace(/f"([^"]*)"/g, (_, s) => {
+              return '"' + s.replace(/\{([^}]+)\}/g, (_, v) => {
+                try { return eval(v); } catch { return v; }
+              }) + '"';
+            });
+            try { localOutput += String(eval(expr)) + '\n'; } catch { localOutput += line + '\n'; }
+          }
+        } catch { localOutput += '[could not evaluate]\n'; }
+      });
+      setOutput('success', 'Executed locally', localOutput.trimEnd() || '(No output)');
+    } else {
+      // Can't run locally
+      setOutput('error', '', 
+        `⚠️ Online compiler is unavailable right now.\n\n` +
+        `To run your code:\n` +
+        `1. Copy your code\n` +
+        `2. Open terminal / command prompt\n` +
+        `3. Run: python code.py\n\n` +
+        `Your code is saved and ready to paste! 💪`, true);
+    }
+  } catch (e) {
+    setOutput('error', '', '❌ Error: ' + e.message, true);
+  }
+}
+</script>
+</body>
+</html>

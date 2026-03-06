@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PEC Placement Portal — Shortcut Tips</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --teal:#02C5A0;--navy:#050F1A;--navy2:#0A1929;
+      --card:#0D2137;--border:#1A3A55;--text:#E8F4F2;--muted:#7A9BAE;
+      --accent:#FFD166;--red:#FF6B6B;--orange:#FF9F43;--purple:#A855F7;--green:#22C55E;
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);display:flex;min-height:100vh}
+    .sidebar{width:240px;min-width:240px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;position:fixed;top:0;left:0;bottom:0;z-index:100}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border)}
+    .brand-icon{width:36px;height:36px;background:var(--teal);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .brand-name{font-family:'Space Mono',monospace;font-size:16px;color:var(--teal)}
+    .nav-section{padding:20px 12px 8px}
+    .nav-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:0 8px;margin-bottom:8px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;transition:all .2s;font-size:14px;font-weight:500;color:var(--muted);margin-bottom:2px;text-decoration:none}
+    .nav-item:hover{background:rgba(2,197,160,.08);color:var(--text)}
+    .nav-item.active{background:rgba(2,197,160,.15);color:var(--teal)}
+    .nav-icon{font-size:18px;width:24px;text-align:center}
+    .sidebar-bottom{margin-top:auto;padding:16px 12px;border-top:1px solid var(--border)}
+    .user-info{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--card)}
+    .user-avatar{width:34px;height:34px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-size:14px}
+    .user-name{font-size:14px;font-weight:600}
+    .user-role{font-size:11px;color:var(--muted)}
+    .main{margin-left:240px;flex:1;padding:32px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+    .page-title{font-size:26px;font-weight:700}
+    .page-sub{font-size:14px;color:var(--muted);margin-top:2px}
+    .btn-logout{padding:8px 16px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:.2s}
+    .btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+    /* CATEGORY TABS */
+    .cat-tabs{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap}
+    .cat-tab{padding:10px 22px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:2px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:.2s}
+    .cat-tab:hover{color:var(--text);border-color:var(--muted)}
+    .cat-tab.active{border-color:var(--accent);background:rgba(255,209,102,.1);color:var(--accent)}
+    .cat-tab.active.reasoning{border-color:var(--purple);background:rgba(168,85,247,.1);color:var(--purple)}
+
+    /* TIPS GRID */
+    .tips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:20px}
+    .tip-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+    .tip-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+    .tip-header{padding:18px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+    .tip-icon{font-size:28px}
+    .tip-title{font-size:16px;font-weight:700}
+    .tip-tag{margin-left:auto;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:'Space Mono',monospace}
+    .tip-tag.apt{background:rgba(255,209,102,.15);color:var(--accent)}
+    .tip-tag.rea{background:rgba(168,85,247,.15);color:var(--purple)}
+    .tip-body{padding:18px 20px}
+    .tip-formula{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-family:'Space Mono',monospace;font-size:13px;color:var(--teal);line-height:1.6}
+    .tip-steps{list-style:none;display:flex;flex-direction:column;gap:8px}
+    .tip-steps li{display:flex;gap:10px;font-size:14px;line-height:1.5;color:var(--muted)}
+    .tip-steps li .step-num{min-width:22px;height:22px;background:rgba(2,197,160,.15);color:var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+    .tip-steps li.reasoning-step .step-num{background:rgba(168,85,247,.15);color:var(--purple)}
+    .tip-example{margin-top:14px;background:rgba(255,209,102,.05);border:1px solid rgba(255,209,102,.2);border-radius:10px;padding:12px 16px}
+    .tip-example .ex-label{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.5px;margin-bottom:6px}
+    .tip-example .ex-text{font-size:13px;color:var(--text);line-height:1.6}
+    .tip-example.rea-ex{background:rgba(168,85,247,.05);border-color:rgba(168,85,247,.2)}
+    .tip-example.rea-ex .ex-label{color:var(--purple)}
+    .tip-shortcut{display:inline-block;margin-top:10px;padding:6px 14px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;font-size:13px;color:var(--green);font-weight:600}
+
+    /* SEARCH */
+    .search-bar{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+    .search-input{flex:1;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:.2s}
+    .search-input:focus{border-color:var(--teal)}
+    .search-input::placeholder{color:var(--muted)}
+    .count-badge{padding:6px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);white-space:nowrap}
+  </style>
+
+<!-- BLUE WHITE THEME OVERRIDE -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --teal: #1a56db !important;
+  --navy: #f0f6ff !important;
+  --navy2: #ffffff !important;
+  --card: #ffffff !important;
+  --border: #dce8ff !important;
+  --text: #1e293b !important;
+  --muted: #64748b !important;
+  --accent: #f59e0b !important;
+  --red: #ef4444 !important;
+  --green: #16a34a !important;
+  --orange: #f97316 !important;
+  --purple: #7c3aed !important;
+}
+* { font-family: 'Outfit', sans-serif !important; }
+body { background: #f0f6ff !important; color: #1e293b !important; }
+
+/* SIDEBAR */
+.sidebar { background: #ffffff !important; border-right: 1.5px solid #dce8ff !important; box-shadow: 2px 0 12px rgba(26,86,219,0.06) !important; }
+.sidebar-brand, .sidebar-logo { border-bottom: 1.5px solid #dce8ff !important; }
+.brand-name, .sidebar-logo h2 { color: #1a56db !important; }
+.sidebar-logo p { color: #64748b !important; }
+.brand-icon { background: #1a56db !important; color: #fff !important; }
+.nav-label { color: #94a3b8 !important; }
+.nav-item { color: #64748b !important; }
+.nav-item:hover { background: rgba(26,86,219,0.06) !important; color: #1a56db !important; }
+.nav-item.active { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border-left: 3px solid #1a56db !important; }
+.nav-icon { color: inherit !important; }
+.sidebar-bottom { border-top: 1.5px solid #dce8ff !important; }
+
+/* USER INFO */
+.user-info, .student-info { background: #f0f6ff !important; border: 1px solid #dce8ff !important; }
+.user-name, .name { color: #1e293b !important; }
+.user-role, .dept { color: #64748b !important; }
+.user-avatar { background: #1a56db !important; color: #fff !important; }
+.logout-btn { background: rgba(239,68,68,0.08) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* TOPBAR */
+.topbar { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.06) !important; }
+.brand, .brand-name { color: #1a56db !important; }
+.admin-badge { background: rgba(239,68,68,0.1) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+.btn-refresh { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border: 1.5px solid rgba(26,86,219,0.2) !important; }
+.btn-logout, .btn-logout:not(:hover) { background: transparent !important; border: 1px solid #dce8ff !important; color: #64748b !important; }
+.btn-logout:hover { border-color: #ef4444 !important; color: #ef4444 !important; }
+
+/* MAIN AREA */
+.main { background: #f0f6ff !important; }
+.page-title { color: #1e293b !important; }
+.page-sub { color: #64748b !important; }
+
+/* CARDS */
+.card, .stat-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; box-shadow: 0 2px 12px rgba(26,86,219,0.06) !important; }
+.card-title, .card-header { color: #1e293b !important; }
+
+/* STATS */
+.stat-card::before { opacity: 1 !important; }
+.sc1::before { background: #1a56db !important; }
+.sc2::before { background: #f59e0b !important; }
+.sc3::before { background: #7c3aed !important; }
+.sc4::before { background: #16a34a !important; }
+.stat-val, .value { color: #1e293b !important; }
+.stat-lbl, .label, .sub { color: #64748b !important; }
+.stat-icon { filter: none !important; }
+
+/* TABLE */
+th { color: #64748b !important; border-bottom: 1.5px solid #dce8ff !important; background: #f8faff !important; }
+td { color: #1e293b !important; border-bottom: 1px solid #f0f6ff !important; }
+tr:hover td { background: rgba(26,86,219,0.02) !important; }
+table { background: #ffffff !important; }
+
+/* BADGES */
+.badge-it { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.badge-cse { background: rgba(124,58,237,0.1) !important; color: #7c3aed !important; }
+.badge-ece { background: rgba(249,115,22,0.1) !important; color: #f97316 !important; }
+.badge-eee { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge-mech { background: rgba(239,68,68,0.1) !important; color: #ef4444 !important; }
+.badge-civil { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+
+/* SEARCH */
+.search-bar { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.search-bar:focus { border-color: #1a56db !important; }
+.search-bar::placeholder { color: #94a3b8 !important; }
+
+/* DEPT FILTER BUTTONS */
+.dept-btn { border: 1px solid #dce8ff !important; color: #64748b !important; background: #ffffff !important; }
+.dept-btn:hover { border-color: #1a56db !important; color: #1a56db !important; }
+.dept-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* TASKS */
+.task-item { background: #f8faff !important; border: 1px solid #dce8ff !important; }
+.task-text { color: #1e293b !important; }
+.task-text.done { color: #94a3b8 !important; }
+.task-badge { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.task-check { border: 2px solid #dce8ff !important; }
+.task-check.done { background: #1a56db !important; border-color: #1a56db !important; }
+.add-task-form input, .add-task-form select { background: #f8faff !important; border: 1px solid #dce8ff !important; color: #1e293b !important; }
+.add-btn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* PROGRESS */
+.progress-bar { background: #f0f6ff !important; }
+.progress-fill { background: linear-gradient(90deg, #1a56db, #60a5fa) !important; }
+.progress-label { color: #1e293b !important; }
+
+/* SCORES TABLE */
+.scores-table th { color: #64748b !important; border-bottom: 1px solid #dce8ff !important; }
+.scores-table td { border-bottom: 1px solid #f0f6ff !important; color: #1e293b !important; }
+.badge.basic { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.badge.advanced { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge.quick { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* TOAST */
+.toast { background: rgba(26,86,219,0.95) !important; box-shadow: 0 8px 24px rgba(26,86,219,0.3) !important; }
+
+/* LOADING */
+.loading { color: #64748b !important; }
+.empty { color: #94a3b8 !important; }
+.error-box { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* RANK BADGES */
+.r1 { background: rgba(245,158,11,0.15) !important; color: #d97706 !important; }
+.r2 { background: rgba(148,163,184,0.15) !important; color: #64748b !important; }
+.r3 { background: rgba(180,83,9,0.15) !important; color: #b45309 !important; }
+.rn { background: rgba(100,116,139,0.1) !important; color: #64748b !important; }
+
+/* TOPIC CARDS */
+.topic-card { background: #ffffff !important; border: 2px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.04) !important; }
+.topic-card:hover { border-color: #1a56db !important; box-shadow: 0 8px 24px rgba(26,86,219,0.12) !important; }
+.topic-card.sel-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.t-name { color: #1e293b !important; }
+.t-count { color: #64748b !important; }
+
+/* LEVEL TABS */
+.level-tab { background: #ffffff !important; border: 2px solid #dce8ff !important; color: #64748b !important; }
+.level-tab.active-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.level-step { background: #ffffff !important; border: 2px solid #dce8ff !important; }
+.level-step.active { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.step-title { color: #1e293b !important; }
+.step-sub { color: #64748b !important; }
+.level-banner.basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.level-badge.basic { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.level-desc { color: #64748b !important; }
+.level-desc strong { color: #1e293b !important; }
+
+/* QUIZ */
+.quiz-header { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; }
+.question-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.option-btn { background: #f8faff !important; border: 2px solid #dce8ff !important; color: #1e293b !important; }
+.option-btn:hover { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.option-btn.selected { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.option-btn.correct { border-color: #16a34a !important; background: rgba(22,163,74,0.08) !important; color: #16a34a !important; }
+.option-btn.wrong { border-color: #ef4444 !important; background: rgba(239,68,68,0.08) !important; color: #ef4444 !important; }
+
+/* START BUTTON */
+.btn-start { background: #1a56db !important; color: #ffffff !important; }
+.btn-start:hover:not(:disabled) { background: #1447c0 !important; box-shadow: 0 8px 25px rgba(26,86,219,0.3) !important; }
+.btn-start:disabled { background: #dce8ff !important; color: #94a3b8 !important; }
+
+/* TOOLBAR */
+.toolbar { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.lang-select, select { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.run-btn, #runBtn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* COMPILER */
+.CodeMirror { background: #f8faff !important; color: #1e293b !important; }
+.output-area { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.output-area pre { color: #1e293b !important; }
+
+/* TIPS */
+.tip-card, .shortcut-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.tip-title, .shortcut-title { color: #1e293b !important; }
+.tip-text, .shortcut-text { color: #64748b !important; }
+.category-btn { background: #ffffff !important; border: 1.5px solid #dce8ff !important; color: #64748b !important; }
+.category-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* RESUME */
+.resume-section { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.section-title { color: #1e293b !important; }
+.form-control, .form-input, input[type=text], input[type=email], textarea { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.form-control:focus, input:focus, textarea:focus { border-color: #1a56db !important; }
+.btn-primary { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* AI WEAK AREA */
+.weak-area { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.15) !important; }
+.weak-area h4 { color: #ef4444 !important; }
+.strong-area { background: rgba(22,163,74,0.06) !important; border: 1px solid rgba(22,163,74,0.15) !important; }
+.strong-area h4 { color: #16a34a !important; }
+
+/* ADMIN LOGIN */
+#adminLoginScreen { background: #f0f6ff !important; }
+
+/* SCORE BARS */
+.step-status.done { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.step-status.current { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0f6ff; }
+::-webkit-scrollbar-thumb { background: #dce8ff; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #1a56db; }
+</style>
+
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">🎯</div>
+    <div class="brand-name" style="font-size:13px;line-height:1.3">PEC<br>Placement Portal</div>
+  </div>
+    <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">✅</span> Task Manager</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">🤖</span> AI Detector</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📈</span> My Progress</a>
+    <a class="nav-item " href="test.html"><span class="nav-icon">🧪</span> Take a Test</a>
+    <a class="nav-item " href="compiler.html"><span class="nav-icon">💻</span> Code Compiler</a>
+    <a class="nav-item active" href="tips.html"><span class="nav-icon">⚡</span> Shortcut Tips</a>
+    <a class="nav-item " href="resume.html"><span class="nav-icon">📄</span> Resume Builder</a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-info">
+      <div class="user-avatar" id="avatarInitial">M</div>
+      <div>
+        <div class="user-name" id="sidebarName">Midhun</div>
+        <div class="user-role">B.Tech IT · 6th Sem</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">⚡ Shortcut Tips</div>
+      <div class="page-sub">Quick formulas & tricks for Aptitude and Reasoning — crack placements faster</div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="search-bar">
+    <input class="search-input" type="text" id="searchInput" placeholder="🔍 Search tips... (e.g. percentage, syllogism, time)" oninput="filterTips()"/>
+    <div class="count-badge" id="countBadge">0 tips</div>
+  </div>
+
+  <div class="cat-tabs">
+    <button class="cat-tab active" onclick="setTab('all',this)">📚 All Tips</button>
+    <button class="cat-tab" onclick="setTab('aptitude',this)">🧮 Aptitude</button>
+    <button class="cat-tab reasoning" onclick="setTab('reasoning',this)">🧠 Reasoning</button>
+  </div>
+
+  <div class="tips-grid" id="tipsGrid"></div>
+</main>
+
+<script>
+const token = localStorage.getItem('pt_token');
+const student = JSON.parse(localStorage.getItem('pt_student') || '{}');
+const currentEmail = student.email || '';
+if (!token) window.location.href = 'index.html';
+
+const user = { name: student.name || 'Student', department: student.department || 'IT', semester: student.semester || 6 };
+const firstName = user.name.split(' ')[0];
+document.getElementById('sidebarName').textContent = firstName;
+document.getElementById('avatarInitial').textContent = firstName[0].toUpperCase();
+function logout() { localStorage.removeItem('pt_token'); localStorage.removeItem('pt_student'); window.location.href = 'index.html'; }
+
+const TIPS = [
+  // ── APTITUDE ──
+  {
+    cat:'aptitude', icon:'💯', title:'Percentage Shortcuts',
+    formula:'X% of Y = Y% of X\nA% of B = (A × B) / 100',
+    steps:[
+      'To find 25% → divide by 4',
+      'To find 50% → divide by 2',
+      'To find 75% → divide by 4, multiply by 3',
+      'To find 12.5% → divide by 8',
+      'To find 33.33% → divide by 3',
+    ],
+    example:'Find 18% of 250 → 250×18/100 = 45\nShortcut: 10%=25, 8%=20 → 25+20=45',
+    shortcut:'Remember: 1% = number ÷ 100. Build up from there!'
+  },
+  {
+    cat:'aptitude', icon:'⏱️', title:'Time & Work Shortcuts',
+    formula:'If A does work in x days, rate = 1/x per day\nCombined rate = 1/x + 1/y\nDays together = xy / (x+y)',
+    steps:[
+      'Find individual rates (work done per day)',
+      'Add rates to get combined rate',
+      'Take reciprocal to get total days',
+      'For wages: divide in ratio of work done',
+    ],
+    example:'A in 10 days, B in 15 days\nTogether = (10×15)/(10+15) = 150/25 = 6 days',
+    shortcut:'Use LCM method: LCM(10,15)=30. A=3 units/day, B=2 units/day. Together=5 units/day. Days=30/5=6'
+  },
+  {
+    cat:'aptitude', icon:'🚂', title:'Speed, Distance & Time',
+    formula:'Speed = Distance / Time\nRelative Speed (same dir) = S1 - S2\nRelative Speed (opp dir) = S1 + S2',
+    steps:[
+      'Convert km/h to m/s: multiply by 5/18',
+      'Convert m/s to km/h: multiply by 18/5',
+      'Trains crossing: use length of both trains',
+      'Upstream/downstream: add or subtract current speed',
+    ],
+    example:'Train 200m at 72 km/h crosses a pole\n→ 72 km/h = 72×5/18 = 20 m/s\nTime = 200/20 = 10 seconds',
+    shortcut:'72 km/h = 20 m/s. Remember: 18 km/h = 5 m/s (base pair)'
+  },
+  {
+    cat:'aptitude', icon:'💰', title:'Profit & Loss Tricks',
+    formula:'Profit% = (Profit / CP) × 100\nSP = CP × (100 + P%) / 100\nCP = SP × 100 / (100 + P%)',
+    steps:[
+      'Mark profit/loss as + or − from CP',
+      'Discount is always on Marked Price (MP)',
+      'Successive discounts: use (100-a)(100-b)/100',
+      'For 20% profit: SP = CP × 1.2',
+    ],
+    example:'CP=₹500, Profit=20%\nSP = 500 × 120/100 = ₹600\nIf sold at ₹450 → Loss = 50, Loss% = 10%',
+    shortcut:'Memorize: if profit% = loss%, you always LOSE money (difference of squares trick)'
+  },
+  {
+    cat:'aptitude', icon:'🏦', title:'Simple & Compound Interest',
+    formula:'SI = (P × R × T) / 100\nCI = P × (1 + R/100)^T − P\nCI − SI = P(R/100)² for 2 years',
+    steps:[
+      'SI grows linearly; CI grows exponentially',
+      'CI for 2 yrs = SI + (SI of first year × R/100)',
+      'If doubles in N years (SI): R = 100/N',
+      'Rule of 72: years to double = 72/R (approx)',
+    ],
+    example:'P=₹1000, R=10%, T=2 yrs\nSI = 1000×10×2/100 = ₹200\nCI = 1000×(1.1)²−1000 = ₹210\nDiff = ₹10 = P×(R/100)² = 1000×0.01',
+    shortcut:'CI − SI for 2 years = P×(r/100)². Always remember this!'
+  },
+  {
+    cat:'aptitude', icon:'⚗️', title:'Ratio & Proportion',
+    formula:'If a:b = c:d → ad = bc (cross multiply)\nMean proportion of a,b = √(ab)\nThird proportion of a,b = b²/a',
+    steps:[
+      'Scale both sides equally to find missing values',
+      'Mixture problems: alligation method',
+      'Alligation: |cheap−mean| : |mean−costly|',
+      'Compound ratio: multiply ratios term by term',
+    ],
+    example:'Alligation: Milk ₹20/L, Water ₹0. Mix at ₹8/L\n→ |20−8| : |8−0| = 12 : 8 = 3 : 2\nSo 3 parts milk, 2 parts water',
+    shortcut:'Alligation is the fastest method for mixture problems — draw a cross!'
+  },
+  {
+    cat:'aptitude', icon:'🔢', title:'Number System Tricks',
+    formula:'Divisibility: sum of digits ÷ 9\nLast digit pattern: powers of 2 repeat every 4\nUnit digit cycle: 2→2,4,8,6 | 3→3,9,7,1',
+    steps:[
+      'Divisible by 4 → last 2 digits divisible by 4',
+      'Divisible by 8 → last 3 digits divisible by 8',
+      'Sum of n natural numbers = n(n+1)/2',
+      'Sum of squares = n(n+1)(2n+1)/6',
+    ],
+    example:'Unit digit of 7^55 → cycle of 7 is 7,9,3,1 (length 4)\n55 mod 4 = 3 → 3rd in cycle = 3\nUnit digit = 3',
+    shortcut:'For unit digit of a^n: find n mod (cycle length), map to cycle'
+  },
+  {
+    cat:'aptitude', icon:'📊', title:'Average & Mean Tricks',
+    formula:'Average = Sum / Count\nNew avg = old avg + (new − old avg) / new count\nWeighted avg = (w1×a1 + w2×a2) / (w1+w2)',
+    steps:[
+      'If one number changes: new avg = old avg ± change/n',
+      'If a number is removed: recalculate accordingly',
+      'Average of consecutive numbers = middle number',
+      'Average of 1 to n = (n+1)/2',
+    ],
+    example:'Avg of 5 numbers = 20. One number 10 replaced by 40:\nChange = +30, New avg = 20 + 30/5 = 26',
+    shortcut:'Don\'t recalculate sum each time — use "change divided by count" trick!'
+  },
+  {
+    cat:'aptitude', icon:'🎲', title:'Permutation & Combination',
+    formula:'nPr = n! / (n−r)!\nnCr = n! / [r!(n−r)!]\nnC0 = nCn = 1 | nC1 = n',
+    steps:[
+      'Arrangement (order matters) → Permutation',
+      'Selection (order doesn\'t matter) → Combination',
+      'Circular arrangement = (n−1)!',
+      'Total arrangements of n with p alike = n!/p!',
+    ],
+    example:'Choose 3 from 5 people → 5C3 = 10 ways\nArrange 5 in a circle → (5−1)! = 24 ways',
+    shortcut:'nCr = nC(n-r). Always use this to simplify: 10C8 = 10C2 = 45'
+  },
+  // ── REASONING ──
+  {
+    cat:'reasoning', icon:'🔠', title:'Coding-Decoding Tricks',
+    formula:'Letter position: A=1, B=2...Z=26\nOpposite pairs: A↔Z, B↔Y (sum=27)\nShift patterns: +1, +2, alternate steps',
+    steps:[
+      'Write A-Z with numbers 1-26 first',
+      'Check if letters are shifted by fixed number',
+      'Check opposite letter (A-Z, B-Y, etc.)',
+      'Check if consonants/vowels are coded differently',
+      'Look for position reversal patterns',
+    ],
+    example:'If APPLE → BQQMF (each letter +1)\nThen MANGO → NBOHO',
+    shortcut:'Always check: +1 shift, -1 shift, and mirror (27-position) first'
+  },
+  {
+    cat:'reasoning', icon:'🧩', title:'Syllogism Rules',
+    formula:'All A are B + All B are C → All A are C\nAll A are B + No B is C → No A is C\nSome A are B + All B are C → Some A are C',
+    steps:[
+      'Draw Venn diagrams for each statement',
+      'Never assume "some" means "all"',
+      '"No" conclusion: circles must not overlap',
+      '"Some" conclusion: at least one intersection',
+      'Check each conclusion against ALL possibilities',
+    ],
+    example:'All cats are animals. Some animals are dogs.\n→ Some animals are cats ✓\n→ Some cats are dogs ✗ (not definite)',
+    shortcut:'Use Venn diagrams ALWAYS. Never guess — draw it out!'
+  },
+  {
+    cat:'reasoning', icon:'🔢', title:'Number Series Patterns',
+    formula:'Difference series | Square/Cube series\nFibonacci-type | Alternating series\nMultiplication/Division series',
+    steps:[
+      'Find difference between consecutive terms',
+      'If 1st difference not constant, find 2nd difference',
+      'Check if terms are squares, cubes, or primes',
+      'Split series if it has two interleaved patterns',
+      'Check for +prime, ×2, ×3 patterns',
+    ],
+    example:'2, 6, 12, 20, 30 → Differences: 4,6,8,10 (even numbers)\nNext difference = 12 → Next term = 42',
+    shortcut:'Always find the DIFFERENCE SERIES first. Most questions crack at level 1 or 2 differences.'
+  },
+  {
+    cat:'reasoning', icon:'🗺️', title:'Direction & Distance',
+    formula:'North↑ South↓ East→ West←\nDiagonal: NE=45° NW=135° SE=315°\nFinal distance = √(x² + y²) (Pythagoras)',
+    steps:[
+      'Draw a rough compass diagram first',
+      'Mark each move step by step on paper',
+      'Track net X (East-West) and Y (North-South)',
+      'Use Pythagoras only if movement is diagonal',
+      'Right turn from North = East; Left = West',
+    ],
+    example:'Walk 3km North, turn right walk 4km\n→ Net: 3km N, 4km E\nDistance = √(9+16) = √25 = 5 km',
+    shortcut:'Always note: Right turn rotates 90° clockwise. Track x and y separately!'
+  },
+  {
+    cat:'reasoning', icon:'🩸', title:'Blood Relations Shortcuts',
+    formula:'Brother/Sister = Sibling\nMother\'s brother = Uncle\nFather\'s sister = Aunt\nSpouse\'s parent = In-law',
+    steps:[
+      'Convert all statements into a family tree diagram',
+      'Mark gender clearly (M/F) for each person',
+      'Work backwards from the asked person',
+      '"X introduced Y as" → Y is related to X',
+      'Beware of in-laws vs blood relations',
+    ],
+    example:'"A is B\'s father. C is B\'s sister. D is A\'s mother."\nD is grandmother of both B and C\nC is granddaughter of D',
+    shortcut:'Draw a tree EVERY TIME. Never try to solve blood relation in your head!'
+  },
+  {
+    cat:'reasoning', icon:'🪑', title:'Seating Arrangement Tips',
+    formula:'Linear: face same/opposite direction matters\nCircular: relative positions, not absolute\nDouble row: facing each other changes L/R',
+    steps:[
+      'Fix the most constrained person first',
+      'Use "not adjacent" clues to eliminate options',
+      'In circular: fix one person, arrange rest relatively',
+      'Cross-check: use all clues to verify final arrangement',
+      'Mark immediate neighbors clearly',
+    ],
+    example:'6 people in circle. A is 2nd right of B, C is opposite A.\nFix B at top. A = 2 seats right. C = opposite A.',
+    shortcut:'In circular: clockwise = right side. Fix one person and build around them!'
+  },
+  {
+    cat:'reasoning', icon:'🔎', title:'Analogy Tricks',
+    formula:'Word: A is to B as C is to ?\nNumber: Identify operation (×, +, ², etc.)\nLetter: Check position shift or pattern',
+    steps:[
+      'Identify the relationship type (part-whole, cause-effect, etc.)',
+      'Apply exact same relationship to second pair',
+      'For numbers: find operation applied to get second number',
+      'Eliminate options with similar but wrong relationships',
+    ],
+    example:'Doctor : Hospital :: Teacher : ?\n→ Doctor works in Hospital → Teacher works in School\nAnswer: School',
+    shortcut:'Ask: "What is the EXACT relationship?" — not just similar. Be precise!'
+  },
+  {
+    cat:'reasoning', icon:'🗂️', title:'Classification / Odd One Out',
+    formula:'Find the one that doesn\'t share the common property\nCategories: shape, size, number, function, origin',
+    steps:[
+      'Group items by multiple properties first',
+      'The group with 3+ items = correct group',
+      'The lone item = odd one out',
+      'Check hidden properties (e.g., all even vs odd numbers)',
+      'For letters: count vowels, consonants, positions',
+    ],
+    example:'Apple, Mango, Potato, Banana\n→ Apple, Mango, Banana are fruits\n→ Potato is a vegetable → Odd one out!',
+    shortcut:'Always verify your answer by confirming the other 3 share the SAME property'
+  },
+  {
+    cat:'reasoning', icon:'🔗', title:'Statement & Conclusion',
+    formula:'Conclusion must be DIRECTLY inferable\nDon\'t add outside knowledge\nStrong argument: directly addresses the issue',
+    steps:[
+      'Read statement carefully — what\'s directly stated?',
+      'A conclusion must follow ONLY from the statement',
+      'Reject conclusions that use assumed outside info',
+      '"Probably" conclusions are weak — reject for "definitely"',
+      'Both conclusions can be true simultaneously',
+    ],
+    example:'Statement: All graduates got jobs this year.\nConclusion 1: Some got jobs ✓ (directly follows)\nConclusion 2: All will get jobs next year ✗ (assumption)',
+    shortcut:'"Does it FOLLOW from the statement alone?" — that\'s the only test!'
+  },
+];
+
+let currentTab = 'all';
+
+function setTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active','reasoning'));
+  el.classList.add('active');
+  if (tab === 'reasoning') el.classList.add('reasoning');
+  document.getElementById('searchInput').value = '';
+  renderTips();
+}
+
+function filterTips() {
+  renderTips();
+}
+
+function renderTips() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = TIPS.filter(t => {
+    const matchTab = currentTab === 'all' || t.cat === currentTab;
+    const matchSearch = !query || 
+      t.title.toLowerCase().includes(query) ||
+      t.formula.toLowerCase().includes(query) ||
+      t.steps.some(s => s.toLowerCase().includes(query)) ||
+      t.example.toLowerCase().includes(query);
+    return matchTab && matchSearch;
+  });
+
+  document.getElementById('countBadge').textContent = filtered.length + ' tips';
+
+  const grid = document.getElementById('tipsGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)">
+      <div style="font-size:48px;margin-bottom:16px">🔍</div>
+      <div style="font-size:18px;font-weight:700">No tips found</div>
+      <div style="font-size:14px;margin-top:8px">Try a different search term</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(tip => {
+    const isReasoning = tip.cat === 'reasoning';
+    return `
+    <div class="tip-card">
+      <div class="tip-header">
+        <div class="tip-icon">${tip.icon}</div>
+        <div class="tip-title">${tip.title}</div>
+        <span class="tip-tag ${isReasoning ? 'rea' : 'apt'}">${isReasoning ? 'REASONING' : 'APTITUDE'}</span>
+      </div>
+      <div class="tip-body">
+        <div class="tip-formula">${tip.formula.replace(/\n/g,'<br>')}</div>
+        <ul class="tip-steps">
+          ${tip.steps.map((s,i) => `
+            <li class="${isReasoning ? 'reasoning-step' : ''}">
+              <span class="step-num">${i+1}</span>
+              <span>${s}</span>
+            </li>`).join('')}
+        </ul>
+        <div class="tip-example ${isReasoning ? 'rea-ex' : ''}">
+          <div class="ex-label">📌 EXAMPLE</div>
+          <div class="ex-text">${tip.example.replace(/\n/g,'<br>')}</div>
+        </div>
+        <div class="tip-shortcut">💡 ${tip.shortcut}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+renderTips();
+</script>
+</body>
+</html>

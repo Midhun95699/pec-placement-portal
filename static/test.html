@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PEC Placement Portal — Take a Test</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #02C5A0; --navy: #050F1A; --navy2: #0A1929;
+      --card: #0D2137; --border: #1A3A55; --text: #E8F4F2; --muted: #7A9BAE;
+      --accent: #FFD166; --red: #FF6B6B; --orange: #FF9F43; --purple: #A855F7; --green: #22C55E;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--text); display: flex; min-height: 100vh; }
+    .sidebar { width: 240px; min-width: 240px; background: var(--navy2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+    .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 0 20px 24px; border-bottom: 1px solid var(--border); }
+    .brand-icon { width: 36px; height: 36px; background: var(--teal); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .brand-name { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--teal); line-height:1.4; }
+    .nav-section { padding: 20px 12px 8px; }
+    .nav-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; padding: 0 8px; margin-bottom: 8px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 500; color: var(--muted); margin-bottom: 2px; text-decoration: none; }
+    .nav-item:hover { background: rgba(2,197,160,0.08); color: var(--text); }
+    .nav-item.active { background: rgba(2,197,160,0.15); color: var(--teal); }
+    .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--card); }
+    .user-avatar { width: 34px; height: 34px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--navy); font-size: 14px; }
+    .user-name { font-size: 14px; font-weight: 600; }
+    .user-role { font-size: 11px; color: var(--muted); }
+    .main { margin-left: 240px; flex: 1; padding: 32px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+    .page-title { font-size: 26px; font-weight: 700; }
+    .page-sub { font-size: 14px; color: var(--muted); margin-top: 2px; }
+    .btn-logout { padding: 8px 16px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; transition: 0.2s; }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+
+    /* LEVEL PATH */
+    .level-path { display: flex; align-items: stretch; gap: 0; margin-bottom: 24px; }
+    .level-step { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px 16px; background: var(--card); border: 2px solid var(--border); text-align: center; }
+    .level-step:first-child { border-radius: 14px 0 0 14px; }
+    .level-step:last-child { border-radius: 0 14px 14px 0; }
+    .level-step.active { border-color: var(--teal); background: rgba(2,197,160,0.06); }
+    .level-step.unlocked-adv { border-color: var(--purple); background: rgba(168,85,247,0.06); }
+    .level-step.locked { opacity: 0.45; }
+    .step-icon { font-size: 28px; margin-bottom: 8px; }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .step-sub { font-size: 12px; color: var(--muted); }
+    .step-status { font-size: 12px; font-weight: 700; margin-top: 10px; padding: 4px 12px; border-radius: 20px; }
+    .step-status.done { background: rgba(34,197,94,0.2); color: var(--green); }
+    .step-status.current { background: rgba(2,197,160,0.2); color: var(--teal); }
+    .step-status.adv-ready { background: rgba(168,85,247,0.2); color: var(--purple); }
+    .step-status.lock { background: rgba(122,155,174,0.15); color: var(--muted); }
+    .step-arrow { display: flex; align-items: center; justify-content: center; width: 36px; background: var(--border); font-size: 18px; color: var(--muted); flex-shrink: 0; }
+
+    /* LEVEL TABS */
+    .level-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .level-tab { padding: 10px 22px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: 2px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: 0.2s; }
+    .level-tab:hover:not(.disabled) { color: var(--text); }
+    .level-tab.active-basic { border-color: var(--teal); background: rgba(2,197,160,0.1); color: var(--teal); }
+    .level-tab.active-advanced { border-color: var(--purple); background: rgba(168,85,247,0.1); color: var(--purple); }
+    .level-tab.disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* BANNER */
+    .level-banner { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-radius: 14px; margin-bottom: 24px; border: 2px solid; }
+    .level-banner.basic { border-color: var(--teal); background: rgba(2,197,160,0.05); }
+    .level-banner.advanced { border-color: var(--purple); background: rgba(168,85,247,0.05); }
+    .level-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; font-family: 'Space Mono', monospace; }
+    .level-badge.basic { background: rgba(2,197,160,0.2); color: var(--teal); }
+    .level-badge.advanced { background: rgba(168,85,247,0.2); color: var(--purple); }
+    .level-desc { font-size: 14px; color: var(--muted); }
+    .level-desc strong { color: var(--text); }
+
+    /* TOPIC GRID */
+    .topic-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 28px; }
+    .topic-card { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 22px 16px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+    .topic-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .topic-card.sel-basic { border-color: var(--teal); background: rgba(2,197,160,0.08); }
+    .topic-card.sel-advanced { border-color: var(--purple); background: rgba(168,85,247,0.08); }
+    .topic-card.topic-locked { opacity: 0.5; cursor: not-allowed; }
+    .t-icon { font-size: 32px; margin-bottom: 10px; }
+    .t-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .t-count { font-size: 12px; color: var(--muted); }
+    .t-badge { position: absolute; top: 10px; right: 10px; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .t-badge.passed { background: rgba(34,197,94,0.2); color: var(--green); }
+    .t-badge.failed { background: rgba(255,107,107,0.2); color: var(--red); }
+    .t-lock-badge { position: absolute; top: 10px; left: 10px; font-size: 14px; }
+
+    /* START BUTTON */
+    .btn-start { display: block; width: 100%; padding: 16px; background: var(--teal); color: var(--navy); border: none; border-radius: 12px; font-size: 17px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; margin-bottom: 28px; }
+    .btn-start:hover:not(:disabled) { background: #03E5B8; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(2,197,160,0.35); }
+    .btn-start:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+    .btn-start.adv { background: var(--purple); color: white; }
+    .btn-start.adv:hover:not(:disabled) { background: #bf7fff; box-shadow: 0 8px 25px rgba(168,85,247,0.35); }
+
+    /* QUIZ */
+    #quiz-area { display: none; }
+    .quiz-level-tag { display: inline-block; padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; font-family: 'Space Mono', monospace; margin-bottom: 12px; }
+    .quiz-level-tag.basic { background: rgba(2,197,160,0.15); color: var(--teal); }
+    .quiz-level-tag.advanced { background: rgba(168,85,247,0.15); color: var(--purple); }
+    .quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .quiz-info { font-size: 15px; color: var(--muted); }
+    .quiz-info strong { color: var(--text); }
+    .timer-box { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; }
+    .timer-box.warning { border-color: var(--red); color: var(--red); animation: blink 1s infinite; }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+    .quiz-progress { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 28px; overflow: hidden; }
+    .quiz-progress-fill { height: 100%; background: var(--teal); border-radius: 3px; transition: width 0.4s; }
+    .quiz-progress-fill.adv { background: var(--purple); }
+    .question-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+    .q-number { font-size: 12px; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 700; }
+    .q-number.adv { color: var(--purple); }
+    .q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 24px; }
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; font-size: 15px; }
+    .option:hover { border-color: var(--teal); background: rgba(2,197,160,0.06); }
+    .option.adv-opt:hover { border-color: var(--purple); background: rgba(168,85,247,0.06); }
+    .option.selected { border-color: var(--teal); background: rgba(2,197,160,0.12); }
+    .option.selected.adv-opt { border-color: var(--purple); background: rgba(168,85,247,0.12); }
+    .option.correct { border-color: var(--green); background: rgba(34,197,94,0.12); color: var(--green); }
+    .option.wrong { border-color: var(--red); background: rgba(255,107,107,0.12); color: var(--red); }
+    .option-letter { width: 30px; height: 30px; min-width: 30px; border-radius: 8px; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+    .option.selected .option-letter { background: var(--teal); color: var(--navy); }
+    .option.selected.adv-opt .option-letter { background: var(--purple); color: white; }
+    .option.correct .option-letter { background: var(--green); color: white; }
+    .option.wrong .option-letter { background: var(--red); color: white; }
+    .quiz-nav { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+    .btn-nav { padding: 12px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: 0.2s; border: none; }
+    .btn-prev { background: var(--border); color: var(--text); }
+    .btn-prev:hover { background: #2A4A65; }
+    .btn-next { background: var(--teal); color: var(--navy); }
+    .btn-next:hover { background: #03E5B8; }
+    .btn-next.adv { background: var(--purple); color: white; }
+    .btn-next.adv:hover { background: #bf7fff; }
+    .btn-submit { background: var(--accent); color: var(--navy); }
+    .btn-submit:hover { background: #FFE599; }
+
+    /* RESULTS */
+    #result-area { display: none; }
+    .result-hero { text-align: center; padding: 40px; margin-bottom: 20px; }
+    .result-score-circle { width: 160px; height: 160px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; border: 6px solid; font-family: 'Space Mono', monospace; }
+    .result-score-num { font-size: 48px; font-weight: 700; }
+    .result-score-label { font-size: 13px; color: var(--muted); }
+    .result-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .result-sub { font-size: 16px; color: var(--muted); margin-bottom: 32px; }
+    .result-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 32px; }
+    .result-stat { text-align: center; }
+    .result-stat-val { font-size: 32px; font-weight: 700; font-family: 'Space Mono', monospace; }
+    .result-stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .unlock-banner { background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(2,197,160,0.08)); border: 2px solid var(--purple); border-radius: 16px; padding: 28px; margin-bottom: 24px; text-align: center; }
+    .fail-banner { background: rgba(255,107,107,0.06); border: 2px solid var(--red); border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center; }
+    .banner-icon { font-size: 44px; margin-bottom: 12px; }
+    .banner-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .banner-desc { font-size: 14px; color: var(--muted); margin-bottom: 18px; }
+    .btn-unlock { padding: 14px 32px; background: var(--purple); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: 0.2s; }
+    .btn-unlock:hover { background: #bf7fff; }
+    .result-actions { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .btn-retry { padding: 14px 32px; background: var(--teal); color: var(--navy); border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: 0.2s; }
+    .btn-retry:hover { background: #03E5B8; }
+    .btn-back { padding: 14px 32px; background: var(--border); color: var(--text); border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: 0.2s; }
+    .btn-back:hover { background: #2A4A65; }
+    .review-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+    .review-q { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+    .review-ans { font-size: 14px; padding: 8px 14px; border-radius: 8px; display: inline-block; margin: 3px 0; }
+    .review-correct { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .review-wrong { background: rgba(255,107,107,0.12); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+    .review-skip { background: rgba(122,155,174,0.12); color: var(--muted); border: 1px solid rgba(122,155,174,0.3); }
+    .pass-info { font-size: 13px; color: var(--muted); }
+  </style>
+
+<!-- BLUE WHITE THEME OVERRIDE -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --teal: #1a56db !important;
+  --navy: #f0f6ff !important;
+  --navy2: #ffffff !important;
+  --card: #ffffff !important;
+  --border: #dce8ff !important;
+  --text: #1e293b !important;
+  --muted: #64748b !important;
+  --accent: #f59e0b !important;
+  --red: #ef4444 !important;
+  --green: #16a34a !important;
+  --orange: #f97316 !important;
+  --purple: #7c3aed !important;
+}
+* { font-family: 'Outfit', sans-serif !important; }
+body { background: #f0f6ff !important; color: #1e293b !important; }
+
+/* SIDEBAR */
+.sidebar { background: #ffffff !important; border-right: 1.5px solid #dce8ff !important; box-shadow: 2px 0 12px rgba(26,86,219,0.06) !important; }
+.sidebar-brand, .sidebar-logo { border-bottom: 1.5px solid #dce8ff !important; }
+.brand-name, .sidebar-logo h2 { color: #1a56db !important; }
+.sidebar-logo p { color: #64748b !important; }
+.brand-icon { background: #1a56db !important; color: #fff !important; }
+.nav-label { color: #94a3b8 !important; }
+.nav-item { color: #64748b !important; }
+.nav-item:hover { background: rgba(26,86,219,0.06) !important; color: #1a56db !important; }
+.nav-item.active { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border-left: 3px solid #1a56db !important; }
+.nav-icon { color: inherit !important; }
+.sidebar-bottom { border-top: 1.5px solid #dce8ff !important; }
+
+/* USER INFO */
+.user-info, .student-info { background: #f0f6ff !important; border: 1px solid #dce8ff !important; }
+.user-name, .name { color: #1e293b !important; }
+.user-role, .dept { color: #64748b !important; }
+.user-avatar { background: #1a56db !important; color: #fff !important; }
+.logout-btn { background: rgba(239,68,68,0.08) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* TOPBAR */
+.topbar { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.06) !important; }
+.brand, .brand-name { color: #1a56db !important; }
+.admin-badge { background: rgba(239,68,68,0.1) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+.btn-refresh { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border: 1.5px solid rgba(26,86,219,0.2) !important; }
+.btn-logout, .btn-logout:not(:hover) { background: transparent !important; border: 1px solid #dce8ff !important; color: #64748b !important; }
+.btn-logout:hover { border-color: #ef4444 !important; color: #ef4444 !important; }
+
+/* MAIN AREA */
+.main { background: #f0f6ff !important; }
+.page-title { color: #1e293b !important; }
+.page-sub { color: #64748b !important; }
+
+/* CARDS */
+.card, .stat-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; box-shadow: 0 2px 12px rgba(26,86,219,0.06) !important; }
+.card-title, .card-header { color: #1e293b !important; }
+
+/* STATS */
+.stat-card::before { opacity: 1 !important; }
+.sc1::before { background: #1a56db !important; }
+.sc2::before { background: #f59e0b !important; }
+.sc3::before { background: #7c3aed !important; }
+.sc4::before { background: #16a34a !important; }
+.stat-val, .value { color: #1e293b !important; }
+.stat-lbl, .label, .sub { color: #64748b !important; }
+.stat-icon { filter: none !important; }
+
+/* TABLE */
+th { color: #64748b !important; border-bottom: 1.5px solid #dce8ff !important; background: #f8faff !important; }
+td { color: #1e293b !important; border-bottom: 1px solid #f0f6ff !important; }
+tr:hover td { background: rgba(26,86,219,0.02) !important; }
+table { background: #ffffff !important; }
+
+/* BADGES */
+.badge-it { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.badge-cse { background: rgba(124,58,237,0.1) !important; color: #7c3aed !important; }
+.badge-ece { background: rgba(249,115,22,0.1) !important; color: #f97316 !important; }
+.badge-eee { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge-mech { background: rgba(239,68,68,0.1) !important; color: #ef4444 !important; }
+.badge-civil { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+
+/* SEARCH */
+.search-bar { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.search-bar:focus { border-color: #1a56db !important; }
+.search-bar::placeholder { color: #94a3b8 !important; }
+
+/* DEPT FILTER BUTTONS */
+.dept-btn { border: 1px solid #dce8ff !important; color: #64748b !important; background: #ffffff !important; }
+.dept-btn:hover { border-color: #1a56db !important; color: #1a56db !important; }
+.dept-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* TASKS */
+.task-item { background: #f8faff !important; border: 1px solid #dce8ff !important; }
+.task-text { color: #1e293b !important; }
+.task-text.done { color: #94a3b8 !important; }
+.task-badge { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.task-check { border: 2px solid #dce8ff !important; }
+.task-check.done { background: #1a56db !important; border-color: #1a56db !important; }
+.add-task-form input, .add-task-form select { background: #f8faff !important; border: 1px solid #dce8ff !important; color: #1e293b !important; }
+.add-btn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* PROGRESS */
+.progress-bar { background: #f0f6ff !important; }
+.progress-fill { background: linear-gradient(90deg, #1a56db, #60a5fa) !important; }
+.progress-label { color: #1e293b !important; }
+
+/* SCORES TABLE */
+.scores-table th { color: #64748b !important; border-bottom: 1px solid #dce8ff !important; }
+.scores-table td { border-bottom: 1px solid #f0f6ff !important; color: #1e293b !important; }
+.badge.basic { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.badge.advanced { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge.quick { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* TOAST */
+.toast { background: rgba(26,86,219,0.95) !important; box-shadow: 0 8px 24px rgba(26,86,219,0.3) !important; }
+
+/* LOADING */
+.loading { color: #64748b !important; }
+.empty { color: #94a3b8 !important; }
+.error-box { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* RANK BADGES */
+.r1 { background: rgba(245,158,11,0.15) !important; color: #d97706 !important; }
+.r2 { background: rgba(148,163,184,0.15) !important; color: #64748b !important; }
+.r3 { background: rgba(180,83,9,0.15) !important; color: #b45309 !important; }
+.rn { background: rgba(100,116,139,0.1) !important; color: #64748b !important; }
+
+/* TOPIC CARDS */
+.topic-card { background: #ffffff !important; border: 2px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.04) !important; }
+.topic-card:hover { border-color: #1a56db !important; box-shadow: 0 8px 24px rgba(26,86,219,0.12) !important; }
+.topic-card.sel-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.t-name { color: #1e293b !important; }
+.t-count { color: #64748b !important; }
+
+/* LEVEL TABS */
+.level-tab { background: #ffffff !important; border: 2px solid #dce8ff !important; color: #64748b !important; }
+.level-tab.active-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.level-step { background: #ffffff !important; border: 2px solid #dce8ff !important; }
+.level-step.active { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.step-title { color: #1e293b !important; }
+.step-sub { color: #64748b !important; }
+.level-banner.basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.level-badge.basic { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.level-desc { color: #64748b !important; }
+.level-desc strong { color: #1e293b !important; }
+
+/* QUIZ */
+.quiz-header { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; }
+.question-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.option-btn { background: #f8faff !important; border: 2px solid #dce8ff !important; color: #1e293b !important; }
+.option-btn:hover { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.option-btn.selected { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.option-btn.correct { border-color: #16a34a !important; background: rgba(22,163,74,0.08) !important; color: #16a34a !important; }
+.option-btn.wrong { border-color: #ef4444 !important; background: rgba(239,68,68,0.08) !important; color: #ef4444 !important; }
+
+/* START BUTTON */
+.btn-start { background: #1a56db !important; color: #ffffff !important; }
+.btn-start:hover:not(:disabled) { background: #1447c0 !important; box-shadow: 0 8px 25px rgba(26,86,219,0.3) !important; }
+.btn-start:disabled { background: #dce8ff !important; color: #94a3b8 !important; }
+
+/* TOOLBAR */
+.toolbar { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.lang-select, select { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.run-btn, #runBtn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* COMPILER */
+.CodeMirror { background: #f8faff !important; color: #1e293b !important; }
+.output-area { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.output-area pre { color: #1e293b !important; }
+
+/* TIPS */
+.tip-card, .shortcut-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.tip-title, .shortcut-title { color: #1e293b !important; }
+.tip-text, .shortcut-text { color: #64748b !important; }
+.category-btn { background: #ffffff !important; border: 1.5px solid #dce8ff !important; color: #64748b !important; }
+.category-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* RESUME */
+.resume-section { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.section-title { color: #1e293b !important; }
+.form-control, .form-input, input[type=text], input[type=email], textarea { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.form-control:focus, input:focus, textarea:focus { border-color: #1a56db !important; }
+.btn-primary { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* AI WEAK AREA */
+.weak-area { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.15) !important; }
+.weak-area h4 { color: #ef4444 !important; }
+.strong-area { background: rgba(22,163,74,0.06) !important; border: 1px solid rgba(22,163,74,0.15) !important; }
+.strong-area h4 { color: #16a34a !important; }
+
+/* ADMIN LOGIN */
+#adminLoginScreen { background: #f0f6ff !important; }
+
+/* SCORE BARS */
+.step-status.done { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.step-status.current { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0f6ff; }
+::-webkit-scrollbar-thumb { background: #dce8ff; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #1a56db; }
+</style>
+
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">🎯</div>
+    <div class="brand-name" style="font-size:13px;line-height:1.3">PEC<br>Placement Portal</div>
+  </div>
+    <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">✅</span> Task Manager</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">🤖</span> AI Detector</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📈</span> My Progress</a>
+    <a class="nav-item active" href="test.html"><span class="nav-icon">🧪</span> Take a Test</a>
+    <a class="nav-item " href="compiler.html"><span class="nav-icon">💻</span> Code Compiler</a>
+    <a class="nav-item " href="tips.html"><span class="nav-icon">⚡</span> Shortcut Tips</a>
+    <a class="nav-item " href="resume.html"><span class="nav-icon">📄</span> Resume Builder</a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-info">
+      <div class="user-avatar" id="avatarInitial">M</div>
+      <div>
+        <div class="user-name" id="sidebarName">Midhun</div>
+        <div class="user-role">B.Tech IT · 6th Sem</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">🧪 Take a Test</div>
+      <div class="page-sub">Complete Basic Level first to unlock Advanced Level per topic</div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- SELECTOR -->
+  <div id="selector-area">
+
+    <!-- LEVEL PATH -->
+    <div class="level-path">
+      <div class="level-step active" id="stepBasic">
+        <div class="step-icon">🌱</div>
+        <div class="step-title">Basic Level</div>
+        <div class="step-sub">Foundational questions · All topics</div>
+        <div class="step-status current" id="stepBasicStatus">▶ Available Now</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="level-step locked" id="stepAdv">
+        <div class="step-icon" id="stepAdvIcon">🔒</div>
+        <div class="step-title">Advanced Level</div>
+        <div class="step-sub">Challenging questions · Topics you passed</div>
+        <div class="step-status lock" id="stepAdvStatus">Pass Basic (≥60%) to unlock</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="level-tabs">
+      <button class="level-tab active-basic" id="tabBasic" onclick="switchLevel('basic')">🌱 Basic Level</button>
+      <button class="level-tab disabled" id="tabAdv" onclick="switchLevel('advanced')">🔒 Advanced Level</button>
+    </div>
+
+    <!-- BANNER -->
+    <div class="level-banner basic" id="levelBanner">
+      <div class="level-badge basic" id="levelBadge">BASIC</div>
+      <div class="level-desc" id="levelDesc">
+        <strong>10 questions · 10 minutes · Score ≥ 60% to unlock Advanced for that topic</strong><br>
+        Master the basics before moving on.
+      </div>
+    </div>
+
+    <!-- TOPICS -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Select a Topic</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Topics where you passed Basic show 🔓 in Advanced mode</div>
+      <div class="topic-grid" id="topicGrid">
+        <div class="topic-card" id="card-Aptitude" onclick="selectTopic('Aptitude',this)">
+          <div class="t-icon">🧮</div>
+          <div class="t-name" style="color:var(--accent)">Aptitude</div>
+          <div class="t-count">10 Questions</div>
+        </div>
+        <div class="topic-card" id="card-Coding" onclick="selectTopic('Coding',this)">
+          <div class="t-icon">💻</div>
+          <div class="t-name" style="color:var(--teal)">Coding</div>
+          <div class="t-count">10 Questions</div>
+        </div>
+        <div class="topic-card" id="card-Verbal" onclick="selectTopic('Verbal',this)">
+          <div class="t-icon">📖</div>
+          <div class="t-name" style="color:var(--purple)">Verbal</div>
+          <div class="t-count">10 Questions</div>
+        </div>
+        <div class="topic-card" id="card-DBMS" onclick="selectTopic('DBMS',this)">
+          <div class="t-icon">🗄️</div>
+          <div class="t-name" style="color:var(--orange)">DBMS</div>
+          <div class="t-count">10 Questions</div>
+        </div>
+        <div class="topic-card" id="card-OS" onclick="selectTopic('OS',this)">
+          <div class="t-icon">⚙️</div>
+          <div class="t-name" style="color:var(--red)">OS</div>
+          <div class="t-count">10 Questions</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;display:flex;gap:32px;align-items:center">
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">⏱️ How It Works</div>
+        <div class="pass-info">10 MCQ · 10 minutes · 1 mark each · Pass mark: 60% (6/10)<br>
+        Complete Basic Level for a topic → that topic's Advanced Level unlocks automatically.</div>
+      </div>
+      <div style="display:flex;gap:24px">
+        <div style="text-align:center"><div style="font-size:28px;font-weight:700;font-family:'Space Mono',monospace;color:var(--teal)">10</div><div style="font-size:12px;color:var(--muted)">Questions</div></div>
+        <div style="text-align:center"><div style="font-size:28px;font-weight:700;font-family:'Space Mono',monospace;color:var(--accent)">10</div><div style="font-size:12px;color:var(--muted)">Minutes</div></div>
+        <div style="text-align:center"><div style="font-size:28px;font-weight:700;font-family:'Space Mono',monospace;color:var(--purple)">60%</div><div style="font-size:12px;color:var(--muted)">Pass Mark</div></div>
+      </div>
+    </div>
+
+    <button class="btn-start" id="startBtn" onclick="startTest()" disabled>Select a topic to start →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-area">
+    <div><span class="quiz-level-tag" id="quizTag">BASIC</span></div>
+    <div class="quiz-header">
+      <div class="quiz-info">Topic: <strong id="quiz-topic-label">-</strong> &nbsp;·&nbsp; Question <strong id="q-current">1</strong> of <strong>10</strong></div>
+      <div class="timer-box" id="timerBox">⏱ <span id="timerDisplay">10:00</span></div>
+    </div>
+    <div class="quiz-progress"><div class="quiz-progress-fill" id="progressFill" style="width:10%"></div></div>
+    <div class="question-card">
+      <div class="q-number" id="qNumber">Question 1</div>
+      <div class="q-text" id="qText">Loading...</div>
+      <div class="options" id="optionsContainer"></div>
+    </div>
+    <div class="quiz-nav">
+      <button class="btn-nav btn-prev" onclick="prevQ()" id="prevBtn" style="display:none">← Previous</button>
+      <button class="btn-nav btn-next" onclick="nextQ()" id="nextBtn">Next →</button>
+      <button class="btn-nav btn-submit" onclick="submitTest()" id="submitBtn" style="display:none">Submit Test ✓</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="result-area">
+    <div class="card result-hero">
+      <div class="result-score-circle" id="resultCircle">
+        <div class="result-score-num" id="resultScore">0</div>
+        <div class="result-score-label">/ 10</div>
+      </div>
+      <div class="result-title" id="resultTitle">Test Complete!</div>
+      <div class="result-sub" id="resultSub"></div>
+      <div class="result-stats">
+        <div class="result-stat"><div class="result-stat-val" style="color:var(--green)" id="resCorrect">0</div><div class="result-stat-label">✅ Correct</div></div>
+        <div class="result-stat"><div class="result-stat-val" style="color:var(--red)" id="resWrong">0</div><div class="result-stat-label">❌ Wrong</div></div>
+        <div class="result-stat"><div class="result-stat-val" style="color:var(--muted)" id="resSkipped">0</div><div class="result-stat-label">⏭️ Skipped</div></div>
+        <div class="result-stat"><div class="result-stat-val" style="color:var(--accent)" id="resPercent">0%</div><div class="result-stat-label">📊 Score %</div></div>
+      </div>
+    </div>
+    <div id="resultBanner"></div>
+    <div class="result-actions">
+      <button class="btn-retry" onclick="retryTest()">🔄 Retry Same Level</button>
+      <button class="btn-back" onclick="backToSelector()">← Choose Another Topic</button>
+    </div>
+    <div class="card">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">Answer Review</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">See correct answers for all questions</div>
+      <div id="reviewContainer"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const TOPICS = ['Aptitude','Coding','Verbal','DBMS','OS'];
+
+// Auth
+const token = localStorage.getItem('pt_token');
+const student = JSON.parse(localStorage.getItem('pt_student') || '{}');
+const currentEmail = student.email || '';
+if (!token) window.location.href = 'index.html';
+
+const user = { name: student.name || 'Student', department: student.department || 'IT', semester: student.semester || 6 };
+const firstName = user.name.split(' ')[0];
+document.getElementById('sidebarName').textContent = firstName;
+document.getElementById('avatarInitial').textContent = firstName[0].toUpperCase();
+function logout() { localStorage.removeItem('pt_token'); localStorage.removeItem('pt_student'); window.location.href = 'index.html'; }
+
+// ── SCORES ──
+function getScores() { return JSON.parse(localStorage.getItem('pt_lvl_' + currentEmail) || '{}'); }
+function saveScore(topic, level, pct) {
+  const s = getScores();
+  if (!s[topic]) s[topic] = {};
+  s[topic][level] = pct;
+  localStorage.setItem('pt_lvl_' + currentEmail, JSON.stringify(s));
+}
+function getPct(topic, level) {
+  const s = getScores();
+  return s[topic] && s[topic][level] !== undefined ? s[topic][level] : null;
+}
+function passed(topic, level) { const p = getPct(topic, level); return p !== null && p >= 60; }
+function advUnlocked(topic) { return passed(topic, 'basic'); }
+
+// ── QUESTION BANK ──
+const QUESTIONS = {
+  basic: {
+    Aptitude: [
+      {q:"If a train travels 60 km in 1 hour, how far will it travel in 2.5 hours?",opts:["120 km","150 km","180 km","200 km"],ans:1},
+      {q:"What is 25% of 400?",opts:["80","100","120","75"],ans:1},
+      {q:"Find the next number: 2, 6, 12, 20, 30, ?",opts:["40","42","44","48"],ans:1},
+      {q:"What is the LCM of 12 and 18?",opts:["36","24","48","72"],ans:0},
+      {q:"Simple interest on ₹1000 at 5% per annum for 3 years is?",opts:["₹100","₹150","₹200","₹250"],ans:1},
+      {q:"If the ratio of boys to girls is 3:2 and total students are 50, how many girls?",opts:["20","25","30","15"],ans:0},
+      {q:"What is 30% of 250?",opts:["65","70","75","80"],ans:2},
+      {q:"A shopkeeper bought a pen for ₹10 and sold it for ₹12. Profit % is?",opts:["10%","15%","20%","25%"],ans:2},
+      {q:"Speed = Distance / Time. If Distance=100km, Time=2hrs, Speed=?",opts:["40 km/h","50 km/h","60 km/h","45 km/h"],ans:1},
+      {q:"Which is the smallest prime number?",opts:["0","1","2","3"],ans:2},
+    ],
+    Coding: [
+      {q:"What is the time complexity of Binary Search?",opts:["O(n)","O(log n)","O(n²)","O(1)"],ans:1},
+      {q:"Which data structure uses LIFO principle?",opts:["Queue","Stack","Array","Linked List"],ans:1},
+      {q:"What does 'return' do in a function?",opts:["Ends the program","Exits the function and returns a value","Skips the next line","Repeats the function"],ans:1},
+      {q:"What is the output of: print(2 ** 3) in Python?",opts:["6","8","9","5"],ans:1},
+      {q:"What does SQL stand for?",opts:["Simple Query Language","Structured Query Language","System Query Logic","Sequential Query List"],ans:1},
+      {q:"What is the index of the first element in an array in most languages?",opts:["1","0","-1","2"],ans:1},
+      {q:"Which loop is guaranteed to execute at least once?",opts:["for loop","while loop","do-while loop","foreach loop"],ans:2},
+      {q:"What is a variable in programming?",opts:["A fixed number","A named storage location","A function","A loop"],ans:1},
+      {q:"Which symbol is used for single-line comments in Python?",opts:["//","--","#","/*"],ans:2},
+      {q:"What is an algorithm?",opts:["A programming language","A step-by-step set of instructions","A hardware component","A data type"],ans:1},
+    ],
+    Verbal: [
+      {q:"Choose the correct synonym for 'Benevolent':",opts:["Cruel","Kind","Lazy","Angry"],ans:1},
+      {q:"Identify the error: 'She don't like mangoes.'",opts:["She","don't","like","mangoes"],ans:1},
+      {q:"Choose the correct antonym for 'Optimistic':",opts:["Happy","Cheerful","Pessimistic","Positive"],ans:2},
+      {q:"Fill in the blank: 'She is __ honest girl.'",opts:["a","an","the","some"],ans:1},
+      {q:"Which word is spelled correctly?",opts:["Accomodate","Accommodate","Acommodate","Acomodate"],ans:1},
+      {q:"Choose the correct one word for 'One who repairs shoes':",opts:["Cobbler","Mason","Tailor","Carpenter"],ans:0},
+      {q:"What is the meaning of 'Abundant'?",opts:["Scarce","Plenty","Empty","Small"],ans:1},
+      {q:"Choose the correct plural of 'child':",opts:["childs","childen","children","childes"],ans:2},
+      {q:"What part of speech is 'quickly'?",opts:["Noun","Adjective","Adverb","Verb"],ans:2},
+      {q:"Select the correctly punctuated sentence:",opts:["Lets go to school","Let's go to school.","Lets' go to school","Let's go to school"],ans:1},
+    ],
+    DBMS: [
+      {q:"What does DBMS stand for?",opts:["Data Base Management System","Data Base Monitoring System","Data Binary Management System","Digital Base Management System"],ans:0},
+      {q:"Which key uniquely identifies a record in a table?",opts:["Foreign Key","Candidate Key","Primary Key","Secondary Key"],ans:2},
+      {q:"Which SQL command is used to retrieve data?",opts:["INSERT","UPDATE","SELECT","DELETE"],ans:2},
+      {q:"What is a foreign key?",opts:["A key that uniquely identifies a record","A key that references primary key of another table","A key that cannot be NULL","A key used for sorting"],ans:1},
+      {q:"What does DDL stand for?",opts:["Data Definition Language","Data Display Language","Dynamic Definition Logic","Data Design Layer"],ans:0},
+      {q:"Which command permanently saves changes to the database?",opts:["ROLLBACK","SAVEPOINT","COMMIT","BEGIN"],ans:2},
+      {q:"SQL command to insert data into a table is?",opts:["ADD","PUSH","INSERT INTO","PUT"],ans:2},
+      {q:"What is a table in a database?",opts:["A chart","A collection of data organized in rows and columns","A query","A report"],ans:1},
+      {q:"Which SQL clause is used to filter records?",opts:["ORDER BY","GROUP BY","WHERE","HAVING"],ans:2},
+      {q:"What does NULL mean in a database?",opts:["Zero","Empty string","No value / unknown","False"],ans:2},
+    ],
+    OS: [
+      {q:"What is an Operating System?",opts:["A hardware device","Software that manages hardware and software resources","A type of programming language","A database system"],ans:1},
+      {q:"What does CPU stand for?",opts:["Central Processing Unit","Computer Processing Utility","Central Program Unit","Core Processing Unit"],ans:0},
+      {q:"What is a process?",opts:["A program stored on disk","A program in execution","A file in memory","A hardware component"],ans:1},
+      {q:"Which is the fastest memory in the memory hierarchy?",opts:["RAM","Hard Disk","Cache","Registers"],ans:3},
+      {q:"What does RAM stand for?",opts:["Read Access Memory","Random Access Memory","Rapid Application Memory","Read All Memory"],ans:1},
+      {q:"Which of the following is an operating system?",opts:["MS Word","Linux","Google Chrome","VLC Player"],ans:1},
+      {q:"What is a file system used for?",opts:["Running programs","Organizing and storing files","Managing network","Drawing graphics"],ans:1},
+      {q:"Which OS is open-source?",opts:["Windows","macOS","Linux","iOS"],ans:2},
+      {q:"What is multi-tasking in OS?",opts:["Running one program at a time","Running multiple programs simultaneously","Managing files","Printing multiple documents"],ans:1},
+      {q:"What is the full form of GUI?",opts:["Graphical User Interface","General User Input","Graphical User Input","Group User Interface"],ans:0},
+    ],
+  },
+  advanced: {
+    Aptitude: [
+      {q:"A shopkeeper sells an item for ₹540 at a profit of 8%. What is the cost price?",opts:["₹480","₹500","₹520","₹460"],ans:1},
+      {q:"If 6 men complete a work in 8 days, how many days will 4 men take?",opts:["10 days","12 days","14 days","16 days"],ans:1},
+      {q:"A pipe fills a tank in 4 hours. Another pipe empties it in 8 hours. How long to fill when both open?",opts:["4 hours","6 hours","8 hours","10 hours"],ans:2},
+      {q:"The average of 5 numbers is 40. If one number is excluded, the average becomes 45. What is the excluded number?",opts:["20","15","25","10"],ans:0},
+      {q:"A sum doubles in 5 years at simple interest. What is the rate of interest?",opts:["10%","15%","20%","25%"],ans:2},
+      {q:"If A can do a work in 10 days and B in 15 days, in how many days can they do it together?",opts:["5","6","7","8"],ans:1},
+      {q:"What is the compound interest on ₹8000 at 5% p.a. for 2 years?",opts:["₹820","₹840","₹800","₹860"],ans:0},
+      {q:"In how many ways can 5 people be arranged in a row?",opts:["25","60","120","720"],ans:2},
+      {q:"Two numbers are in ratio 3:5. Their LCM is 75. Find the smaller number.",opts:["9","12","15","18"],ans:2},
+      {q:"A train 200m long crosses a pole in 10 seconds. Find its speed in km/h.",opts:["60","72","80","90"],ans:1},
+    ],
+    Coding: [
+      {q:"Which sorting algorithm has best average case O(n log n)?",opts:["Bubble Sort","Insertion Sort","Merge Sort","Selection Sort"],ans:2},
+      {q:"What is a 'null pointer' in programming?",opts:["A pointer to value 0","A pointer pointing to nothing","An empty array","A deleted variable"],ans:1},
+      {q:"What is the space complexity of storing n elements in an array?",opts:["O(1)","O(log n)","O(n)","O(n²)"],ans:2},
+      {q:"What is recursion?",opts:["A loop","A function that calls itself","A data structure","A sorting method"],ans:1},
+      {q:"In OOP, what is encapsulation?",opts:["Hiding implementation details inside a class","Inheriting from a parent class","Overriding methods","Creating multiple objects"],ans:0},
+      {q:"What is the worst-case time complexity of QuickSort?",opts:["O(n log n)","O(n)","O(n²)","O(log n)"],ans:2},
+      {q:"Which data structure is used for BFS traversal?",opts:["Stack","Queue","Array","Tree"],ans:1},
+      {q:"What does 'polymorphism' mean in OOP?",opts:["One class one method","Same interface, different implementations","Multiple inheritance","Hiding data"],ans:1},
+      {q:"What is a memory leak?",opts:["Running out of RAM suddenly","Memory allocated but never freed","A hardware fault","A compilation error"],ans:1},
+      {q:"What is the difference between a stack and a heap in memory?",opts:["No difference","Stack for static allocation, heap for dynamic","Heap for functions, stack for objects","Stack is larger than heap"],ans:1},
+    ],
+    Verbal: [
+      {q:"Choose the correct passive voice: 'Ram wrote a letter.'",opts:["A letter is written by Ram","A letter was written by Ram","A letter has written by Ram","A letter will write by Ram"],ans:1},
+      {q:"What is the meaning of the idiom 'Bite the bullet'?",opts:["To eat something hard","To endure a painful situation","To shoot a gun","To be very hungry"],ans:1},
+      {q:"Which sentence uses the correct tense? 'By 2025, she ___ her degree.'",opts:["completed","will have completed","has completed","completes"],ans:1},
+      {q:"Choose the correct reported speech: 'She said, \"I am tired.\"'",opts:["She said that she is tired","She said that she was tired","She said I am tired","She told I was tired"],ans:1},
+      {q:"Identify the figure of speech: 'The world is a stage.'",opts:["Simile","Metaphor","Personification","Hyperbole"],ans:1},
+      {q:"Choose the correct sentence:",opts:["Neither he nor I are wrong","Neither he nor I is wrong","Neither he nor I am wrong","Neither he nor I were wrong"],ans:2},
+      {q:"What does the prefix 'ante-' mean?",opts:["After","Before","Against","Below"],ans:1},
+      {q:"Identify the correct sentence with gerund:",opts:["She wants to dance","She enjoys dancing","She danced well","She will dance"],ans:1},
+      {q:"What is an oxymoron?",opts:["Exaggeration for effect","A combination of contradictory words","Comparison using 'like'","A reference to famous works"],ans:1},
+      {q:"Choose the sentence in subjunctive mood:",opts:["He goes to school","If I were you, I would go","She is going","They went"],ans:1},
+    ],
+    DBMS: [
+      {q:"What is 1NF (First Normal Form)?",opts:["No repeating groups","No partial dependency","No transitive dependency","No multivalued attributes"],ans:0},
+      {q:"Which JOIN returns all rows from both tables?",opts:["INNER JOIN","LEFT JOIN","RIGHT JOIN","FULL OUTER JOIN"],ans:3},
+      {q:"What is a transaction in DBMS?",opts:["A query","A unit of work that is atomic","A backup process","A data type"],ans:1},
+      {q:"Which property ensures a transaction is fully completed or not at all?",opts:["Consistency","Isolation","Atomicity","Durability"],ans:2},
+      {q:"What is the difference between DELETE and TRUNCATE?",opts:["No difference","DELETE removes all rows; TRUNCATE removes selected","DELETE can be rolled back; TRUNCATE cannot","TRUNCATE works only on views"],ans:2},
+      {q:"What is a view in SQL?",opts:["A physical table copy","A virtual table based on a query","A backup of data","An index structure"],ans:1},
+      {q:"Which normal form eliminates transitive dependency?",opts:["1NF","2NF","3NF","BCNF"],ans:2},
+      {q:"What does indexing do in a database?",opts:["Removes duplicate records","Speeds up data retrieval","Backs up data","Compresses data"],ans:1},
+      {q:"What is a deadlock in database transactions?",opts:["A slow query","Two transactions waiting for each other to release locks","A corrupted database","A failed backup"],ans:1},
+      {q:"Which aggregate function returns the number of rows?",opts:["SUM","AVG","MAX","COUNT"],ans:3},
+    ],
+    OS: [
+      {q:"Which scheduling algorithm gives the shortest job the highest priority?",opts:["FCFS","Round Robin","SJF","Priority Scheduling"],ans:2},
+      {q:"What is a deadlock?",opts:["A slow process","When two processes wait for each other indefinitely","A crashed program","A memory overflow"],ans:1},
+      {q:"Which memory management technique loads only needed pages into memory?",opts:["Segmentation","Paging","Demand Paging","Swapping"],ans:2},
+      {q:"What does semaphore do in OS?",opts:["Manages files","Controls process synchronization","Allocates memory","Schedules CPU"],ans:1},
+      {q:"Which of the following is NOT a process state?",opts:["Running","Waiting","Compiling","Ready"],ans:2},
+      {q:"What is thrashing in OS?",opts:["High CPU usage","Excessive page swapping reducing performance","Memory leak","Process starvation"],ans:1},
+      {q:"What is the purpose of the page table?",opts:["Maps virtual addresses to physical addresses","Stores file metadata","Manages CPU scheduling","Handles I/O requests"],ans:0},
+      {q:"Which algorithm avoids deadlock by denying resource requests?",opts:["Round Robin","Banker's Algorithm","FCFS","Priority Scheduling"],ans:1},
+      {q:"What is context switching?",opts:["Changing OS type","Saving and restoring CPU state to switch processes","Switching storage devices","Changing file systems"],ans:1},
+      {q:"In paging, what is internal fragmentation?",opts:["Unused memory between segments","Wasted space within a page frame","External memory loss","Fragmented file system"],ans:1},
+    ],
+  }
+};
+
+// ── STATE ──
+let selTopic = null, selLevel = 'basic', curQ = 0, answers = [], timer = null, timeLeft = 600, questions = [];
+
+// ── UI ──
+function refreshUI() {
+  const anyAdvUnlocked = TOPICS.some(t => advUnlocked(t));
+  const tabAdv = document.getElementById('tabAdv');
+  const stepAdv = document.getElementById('stepAdv');
+  if (anyAdvUnlocked) {
+    tabAdv.classList.remove('disabled');
+    tabAdv.textContent = '🔓 Advanced Level';
+    stepAdv.classList.remove('locked');
+    stepAdv.classList.add('unlocked-adv');
+    document.getElementById('stepAdvIcon').textContent = '🚀';
+    document.getElementById('stepAdvStatus').textContent = '▶ Unlocked for passed topics!';
+    document.getElementById('stepAdvStatus').className = 'step-status adv-ready';
+  }
+  // Refresh topic badges
+  TOPICS.forEach(t => {
+    const card = document.getElementById('card-' + t);
+    // Remove old badges and lock indicators
+    card.querySelectorAll('.t-badge,.t-lock-badge').forEach(el => el.remove());
+    card.classList.remove('topic-locked');
+    if (selLevel === 'advanced' && !advUnlocked(t)) {
+      card.classList.add('topic-locked');
+      const lb = document.createElement('div'); lb.className = 't-lock-badge'; lb.textContent = '🔒';
+      card.appendChild(lb);
+    } else {
+      const pct = getPct(t, selLevel);
+      if (pct !== null) {
+        const b = document.createElement('div');
+        b.className = 't-badge ' + (pct >= 60 ? 'passed' : 'failed');
+        b.textContent = (pct >= 60 ? '✓ ' : '✗ ') + pct + '%';
+        card.appendChild(b);
+      }
+    }
+  });
+}
+
+function switchLevel(level) {
+  if (level === 'advanced' && !TOPICS.some(t => advUnlocked(t))) return;
+  selLevel = level;
+  selTopic = null;
+  document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('sel-basic','sel-advanced'));
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true; btn.textContent = 'Select a topic to start →'; btn.className = 'btn-start';
+
+  document.getElementById('tabBasic').className = 'level-tab' + (level==='basic'?' active-basic':'');
+  const advTab = document.getElementById('tabAdv');
+  const wasDisabled = advTab.classList.contains('disabled');
+  advTab.className = 'level-tab' + (level==='advanced'?' active-advanced':'') + (wasDisabled?' disabled':'');
+
+  const banner = document.getElementById('levelBanner');
+  const badge = document.getElementById('levelBadge');
+  const desc = document.getElementById('levelDesc');
+  if (level === 'basic') {
+    banner.className='level-banner basic'; badge.className='level-badge basic'; badge.textContent='BASIC';
+    desc.innerHTML='<strong>10 questions · 10 minutes · Score ≥60% to unlock Advanced for that topic</strong><br>Master the basics before moving on.';
+  } else {
+    banner.className='level-banner advanced'; badge.className='level-badge advanced'; badge.textContent='ADVANCED';
+    desc.innerHTML='<strong>10 challenging questions · 10 minutes · Only available for topics where you passed Basic</strong><br>Prove your mastery!';
+  }
+  refreshUI();
+}
+
+function selectTopic(topic, el) {
+  if (selLevel === 'advanced' && !advUnlocked(topic)) {
+    alert('⚠️ You need to pass the Basic level for ' + topic + ' first (score ≥60%)!');
+    return;
+  }
+  document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('sel-basic','sel-advanced'));
+  el.classList.add(selLevel === 'basic' ? 'sel-basic' : 'sel-advanced');
+  selTopic = topic;
+  const btn = document.getElementById('startBtn');
+  btn.disabled = false;
+  btn.textContent = `Start ${topic} ${selLevel === 'basic' ? 'Basic' : 'Advanced'} Test →`;
+  btn.className = 'btn-start' + (selLevel === 'advanced' ? ' adv' : '');
+}
+
+// ── QUIZ ──
+function startTest() {
+  if (!selTopic) return;
+  questions = [...QUESTIONS[selLevel][selTopic]].sort(() => Math.random() - 0.5);
+  answers = new Array(10).fill(null);
+  curQ = 0; timeLeft = 600;
+  document.getElementById('selector-area').style.display = 'none';
+  document.getElementById('quiz-area').style.display = 'block';
+  document.getElementById('result-area').style.display = 'none';
+  document.getElementById('quiz-topic-label').textContent = selTopic;
+  const tag = document.getElementById('quizTag');
+  tag.textContent = selLevel.toUpperCase(); tag.className = 'quiz-level-tag ' + selLevel;
+  const fill = document.getElementById('progressFill');
+  fill.className = 'quiz-progress-fill' + (selLevel==='advanced'?' adv':'');
+  document.getElementById('nextBtn').className = 'btn-nav btn-next' + (selLevel==='advanced'?' adv':'');
+  renderQ(); startTimer();
+}
+
+function startTimer() {
+  clearInterval(timer);
+  timer = setInterval(() => {
+    timeLeft--;
+    const m = String(Math.floor(timeLeft/60)).padStart(2,'0');
+    const s = String(timeLeft%60).padStart(2,'0');
+    document.getElementById('timerDisplay').textContent = m+':'+s;
+    if (timeLeft<=60) document.getElementById('timerBox').classList.add('warning');
+    if (timeLeft<=0) { clearInterval(timer); submitTest(); }
+  }, 1000);
+}
+
+function renderQ() {
+  const q = questions[curQ];
+  const qNum = document.getElementById('qNumber');
+  qNum.textContent = `Question ${curQ+1} of 10`;
+  qNum.className = 'q-number' + (selLevel==='advanced'?' adv':'');
+  document.getElementById('q-current').textContent = curQ+1;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('progressFill').style.width = `${((curQ+1)/10)*100}%`;
+  const L = ['A','B','C','D'];
+  const isAdv = selLevel==='advanced';
+  document.getElementById('optionsContainer').innerHTML = q.opts.map((opt,i)=>`
+    <div class="option${isAdv?' adv-opt':''}${answers[curQ]===i?' selected':''}" onclick="pickAns(${i})">
+      <div class="option-letter">${L[i]}</div>${opt}
+    </div>`).join('');
+  document.getElementById('prevBtn').style.display = curQ>0?'block':'none';
+  document.getElementById('nextBtn').style.display = curQ<9?'block':'none';
+  document.getElementById('submitBtn').style.display = curQ===9?'block':'none';
+}
+
+function pickAns(i) { answers[curQ]=i; renderQ(); }
+function nextQ() { if(curQ<9){curQ++;renderQ();} }
+function prevQ() { if(curQ>0){curQ--;renderQ();} }
+
+function submitTest() {
+  clearInterval(timer);
+  let correct=0,wrong=0,skipped=0;
+  questions.forEach((q,i) => {
+    if(answers[i]===null) skipped++;
+    else if(answers[i]===q.ans) correct++;
+    else wrong++;
+  });
+  const pct = Math.round((correct/10)*100);
+  const isPassed = pct >= 60;
+  saveScore(selTopic, selLevel, pct);
+
+  document.getElementById('quiz-area').style.display = 'none';
+  document.getElementById('result-area').style.display = 'block';
+
+  const col = pct>=70?'#22C55E':pct>=40?'#FFD166':'#FF6B6B';
+  const circle = document.getElementById('resultCircle');
+  circle.style.borderColor=col; circle.style.color=col;
+  document.getElementById('resultScore').textContent = correct;
+  document.getElementById('resCorrect').textContent = correct;
+  document.getElementById('resWrong').textContent = wrong;
+  document.getElementById('resSkipped').textContent = skipped;
+  document.getElementById('resPercent').textContent = pct+'%';
+
+  let title, sub;
+  if(selLevel==='basic'){
+    if(isPassed){title='Basic Level Passed! 🎉';sub=`You scored ${pct}% — Advanced Level for ${selTopic} is now unlocked!`;}
+    else{title='Not Passed Yet 📚';sub=`You scored ${pct}%. You need ≥60% to unlock Advanced for ${selTopic}. Keep practicing!`;}
+  } else {
+    if(isPassed){title='Advanced Level Mastered! 🏆';sub=`Excellent! You scored ${pct}% on the Advanced level!`;}
+    else{title='Keep Pushing 💪';sub=`You scored ${pct}% on Advanced. Review the concepts and try again!`;}
+  }
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultSub').textContent = sub;
+
+  const bannerEl = document.getElementById('resultBanner');
+  if(selLevel==='basic' && isPassed){
+    bannerEl.innerHTML=`<div class="unlock-banner"><div class="banner-icon">🔓</div><div class="banner-title" style="color:var(--purple)">Advanced Level Unlocked for ${selTopic}!</div><div class="banner-desc">You passed Basic with ${pct}%. Go ahead and challenge the Advanced questions for ${selTopic}.</div><button class="btn-unlock" onclick="goAdvanced()">🚀 Try Advanced Now</button></div>`;
+  } else if(selLevel==='basic' && !isPassed){
+    bannerEl.innerHTML=`<div class="fail-banner"><div class="banner-icon">🔒</div><div class="banner-title" style="color:var(--red)">Advanced Level Still Locked</div><div class="banner-desc">Score ≥60% (6/10) in Basic to unlock Advanced for ${selTopic}. You scored ${pct}%.</div></div>`;
+  } else { bannerEl.innerHTML=''; }
+
+  const L=['A','B','C','D'];
+  document.getElementById('reviewContainer').innerHTML = questions.map((q,i)=>{
+    const ua=answers[i]; const ok=ua===q.ans; const sk=ua===null;
+    return `<div class="review-item"><div class="review-q">Q${i+1}. ${q.q}</div>
+      <div><span class="review-ans review-correct">✅ Correct: ${L[q.ans]}. ${q.opts[q.ans]}</span></div>
+      ${sk?'<div><span class="review-ans review-skip">⏭️ Skipped</span></div>':!ok?`<div><span class="review-ans review-wrong">❌ Your answer: ${L[ua]}. ${q.opts[ua]}</span></div>`:''}
+    </div>`;
+  }).join('');
+
+  // Legacy score key
+  const sc=JSON.parse(localStorage.getItem('pt_scores_'+currentEmail)||'{}');
+  sc[selTopic]=pct; localStorage.setItem('pt_scores_'+currentEmail,JSON.stringify(sc));
+  refreshUI();
+}
+
+function goAdvanced() { backToSelector(); setTimeout(()=>switchLevel('advanced'),50); }
+function retryTest() { startTest(); }
+function backToSelector() {
+  document.getElementById('result-area').style.display='none';
+  document.getElementById('selector-area').style.display='block';
+  document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('sel-basic','sel-advanced'));
+  selTopic=null;
+  const btn=document.getElementById('startBtn');
+  btn.disabled=true; btn.textContent='Select a topic to start →'; btn.className='btn-start';
+  refreshUI();
+}
+
+// Init
+refreshUI();
+</script>
+</body>
+</html>

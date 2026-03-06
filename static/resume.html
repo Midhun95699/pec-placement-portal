@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PEC Placement Portal — Resume Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --teal:#02C5A0;--navy:#050F1A;--navy2:#0A1929;
+      --card:#0D2137;--border:#1A3A55;--text:#E8F4F2;--muted:#7A9BAE;
+      --accent:#FFD166;--red:#FF6B6B;--orange:#FF9F43;--purple:#A855F7;--green:#22C55E;
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);display:flex;min-height:100vh}
+    .sidebar{width:240px;min-width:240px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;position:fixed;top:0;left:0;bottom:0;z-index:100}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border)}
+    .brand-icon{width:36px;height:36px;background:var(--teal);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .brand-name{font-family:'Space Mono',monospace;font-size:16px;color:var(--teal)}
+    .nav-section{padding:20px 12px 8px}
+    .nav-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:0 8px;margin-bottom:8px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;transition:all .2s;font-size:14px;font-weight:500;color:var(--muted);margin-bottom:2px;text-decoration:none}
+    .nav-item:hover{background:rgba(2,197,160,.08);color:var(--text)}
+    .nav-item.active{background:rgba(2,197,160,.15);color:var(--teal)}
+    .nav-icon{font-size:18px;width:24px;text-align:center}
+    .sidebar-bottom{margin-top:auto;padding:16px 12px;border-top:1px solid var(--border)}
+    .user-info{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--card)}
+    .user-avatar{width:34px;height:34px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);font-size:14px}
+    .user-name{font-size:14px;font-weight:600}
+    .user-role{font-size:11px;color:var(--muted)}
+    .main{margin-left:240px;flex:1;padding:32px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .page-title{font-size:26px;font-weight:700}
+    .page-sub{font-size:14px;color:var(--muted);margin-top:2px}
+    .btn-logout{padding:8px 16px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:.2s}
+    .btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+    /* LAYOUT: 2 column */
+    .resume-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+    .left-col,.right-col{display:flex;flex-direction:column;gap:20px}
+
+    /* CARDS */
+    .form-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+    .form-card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:rgba(2,197,160,.04)}
+    .form-card-header .fch-icon{font-size:20px}
+    .form-card-header .fch-title{font-size:15px;font-weight:700}
+    .form-card-header .fch-sub{font-size:12px;color:var(--muted);margin-left:auto}
+    .form-card-body{padding:20px}
+
+    /* FORM INPUTS */
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+    .form-row.single{grid-template-columns:1fr}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.3px;text-transform:uppercase}
+    .form-label .required{color:var(--red);margin-left:2px}
+    .form-input,.form-textarea,.form-select{
+      padding:10px 14px;background:var(--navy2);border:1px solid var(--border);
+      border-radius:8px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;
+      outline:none;transition:.2s;width:100%
+    }
+    .form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--teal)}
+    .form-input::placeholder,.form-textarea::placeholder{color:var(--muted)}
+    .form-textarea{resize:vertical;min-height:90px;line-height:1.5}
+    .form-select{cursor:pointer}
+    .form-select option{background:var(--navy2)}
+
+    /* DYNAMIC SECTIONS */
+    .section-item{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;position:relative}
+    .section-item .del-btn{position:absolute;top:10px;right:10px;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;transition:.2s}
+    .section-item .del-btn:hover{color:var(--red)}
+    .btn-add{display:flex;align-items:center;gap:8px;padding:8px 16px;background:transparent;border:1px dashed var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:.2s;margin-top:8px}
+    .btn-add:hover{border-color:var(--teal);color:var(--teal)}
+
+    /* SKILLS TAGS */
+    .skills-container{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+    .skill-tag{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(2,197,160,.1);border:1px solid rgba(2,197,160,.3);border-radius:20px;font-size:13px;color:var(--teal)}
+    .skill-tag .remove-skill{cursor:pointer;color:var(--muted);font-size:12px}
+    .skill-tag .remove-skill:hover{color:var(--red)}
+    .skill-input-row{display:flex;gap:8px}
+    .skill-input-row input{flex:1}
+    .btn-add-skill{padding:10px 16px;background:var(--teal);color:var(--navy);border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+
+    /* ATS PANEL */
+    .ats-panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:sticky;top:20px}
+    .ats-header{padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(255,209,102,.04)}
+    .ats-score-row{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+    .ats-score-circle{width:80px;height:80px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid;font-family:'Space Mono',monospace;flex-shrink:0}
+    .ats-score-num{font-size:24px;font-weight:700}
+    .ats-score-label{font-size:10px;color:var(--muted)}
+    .ats-grade{font-size:20px;font-weight:700;margin-bottom:4px}
+    .ats-grade-sub{font-size:13px;color:var(--muted)}
+    .ats-body{padding:16px 20px}
+
+    /* ATS CHECKS */
+    .ats-checks{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+    .ats-check{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:13px;border:1px solid}
+    .ats-check.pass{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.2);color:var(--green)}
+    .ats-check.fail{background:rgba(255,107,107,.06);border-color:rgba(255,107,107,.2);color:var(--red)}
+    .ats-check.warn{background:rgba(255,209,102,.06);border-color:rgba(255,209,102,.2);color:var(--accent)}
+    .ats-check-icon{font-size:15px;flex-shrink:0}
+    .ats-check-text{flex:1}
+    .ats-check-text .check-title{font-weight:700;margin-bottom:2px}
+    .ats-check-text .check-detail{font-size:12px;opacity:.8}
+
+    /* PROGRESS BAR */
+    .ats-progress{height:8px;background:var(--border);border-radius:4px;margin-bottom:8px;overflow:hidden}
+    .ats-progress-fill{height:100%;border-radius:4px;transition:width .6s ease}
+    .ats-section-score{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:14px}
+
+    /* ACTIONS */
+    .action-btns{display:flex;gap:10px;flex-wrap:wrap}
+    .btn-preview{flex:1;padding:12px;background:var(--teal);color:var(--navy);border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s}
+    .btn-preview:hover{background:#03E5B8}
+    .btn-download{flex:1;padding:12px;background:var(--accent);color:var(--navy);border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s}
+    .btn-download:hover{background:#ffe599}
+    .btn-tips-ats{width:100%;padding:10px;background:transparent;border:1px solid var(--purple);color:var(--purple);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;margin-top:10px}
+    .btn-tips-ats:hover{background:rgba(168,85,247,.1)}
+
+    /* JOB ROLE SELECTOR */
+    .role-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+    .role-chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:.2s}
+    .role-chip:hover{color:var(--text)}
+    .role-chip.active{border-color:var(--teal);background:rgba(2,197,160,.1);color:var(--teal)}
+
+    /* PREVIEW MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.show{display:flex}
+    .modal-box{background:#fff;border-radius:12px;width:100%;max-width:800px;max-height:90vh;overflow-y:auto}
+    .modal-top{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #e5e7eb;background:#f9fafb;border-radius:12px 12px 0 0;position:sticky;top:0;z-index:10}
+    .modal-title{font-size:15px;font-weight:700;color:#111;font-family:'DM Sans',sans-serif}
+    .modal-close{background:transparent;border:none;font-size:20px;cursor:pointer;color:#666}
+    .resume-preview{padding:40px;font-family:'Times New Roman',serif;color:#111;line-height:1.4}
+    .rp-name{font-size:28px;font-weight:700;text-align:center;margin-bottom:4px;letter-spacing:.5px}
+    .rp-contact{text-align:center;font-size:13px;color:#444;margin-bottom:6px}
+    .rp-contact span{margin:0 8px}
+    .rp-line{height:2px;background:#111;margin:10px 0}
+    .rp-section-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #333;padding-bottom:3px;margin:14px 0 8px}
+    .rp-summary{font-size:13px;color:#222;margin-bottom:10px}
+    .rp-exp-item,.rp-edu-item{margin-bottom:10px}
+    .rp-exp-header{display:flex;justify-content:space-between;align-items:center}
+    .rp-company{font-size:14px;font-weight:700}
+    .rp-date{font-size:12px;color:#555}
+    .rp-role{font-size:13px;font-style:italic;color:#333;margin-bottom:4px}
+    .rp-bullets{list-style:disc;padding-left:20px;font-size:13px;color:#222}
+    .rp-bullets li{margin-bottom:3px}
+    .rp-skills-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+    .rp-skill{padding:3px 10px;background:#f0f0f0;border-radius:12px;font-size:12px;font-weight:600;color:#333}
+    .rp-proj-item{margin-bottom:8px}
+    .rp-proj-title{font-size:14px;font-weight:700}
+    .rp-proj-tech{font-size:12px;color:#555;margin-bottom:3px}
+    .rp-proj-desc{font-size:13px;color:#222}
+    .rp-cert-item{font-size:13px;margin-bottom:4px}
+
+    /* ATS TIPS PANEL */
+    .ats-tips-panel{display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px}
+    .ats-tips-panel.show{display:block}
+    .ats-tip-item{display:flex;gap:8px;font-size:12px;color:var(--muted);margin-bottom:8px;align-items:flex-start}
+    .ats-tip-item .tip-bullet{color:var(--purple);font-weight:700;flex-shrink:0}
+  </style>
+
+<!-- BLUE WHITE THEME OVERRIDE -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --teal: #1a56db !important;
+  --navy: #f0f6ff !important;
+  --navy2: #ffffff !important;
+  --card: #ffffff !important;
+  --border: #dce8ff !important;
+  --text: #1e293b !important;
+  --muted: #64748b !important;
+  --accent: #f59e0b !important;
+  --red: #ef4444 !important;
+  --green: #16a34a !important;
+  --orange: #f97316 !important;
+  --purple: #7c3aed !important;
+}
+* { font-family: 'Outfit', sans-serif !important; }
+body { background: #f0f6ff !important; color: #1e293b !important; }
+
+/* SIDEBAR */
+.sidebar { background: #ffffff !important; border-right: 1.5px solid #dce8ff !important; box-shadow: 2px 0 12px rgba(26,86,219,0.06) !important; }
+.sidebar-brand, .sidebar-logo { border-bottom: 1.5px solid #dce8ff !important; }
+.brand-name, .sidebar-logo h2 { color: #1a56db !important; }
+.sidebar-logo p { color: #64748b !important; }
+.brand-icon { background: #1a56db !important; color: #fff !important; }
+.nav-label { color: #94a3b8 !important; }
+.nav-item { color: #64748b !important; }
+.nav-item:hover { background: rgba(26,86,219,0.06) !important; color: #1a56db !important; }
+.nav-item.active { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border-left: 3px solid #1a56db !important; }
+.nav-icon { color: inherit !important; }
+.sidebar-bottom { border-top: 1.5px solid #dce8ff !important; }
+
+/* USER INFO */
+.user-info, .student-info { background: #f0f6ff !important; border: 1px solid #dce8ff !important; }
+.user-name, .name { color: #1e293b !important; }
+.user-role, .dept { color: #64748b !important; }
+.user-avatar { background: #1a56db !important; color: #fff !important; }
+.logout-btn { background: rgba(239,68,68,0.08) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* TOPBAR */
+.topbar { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.06) !important; }
+.brand, .brand-name { color: #1a56db !important; }
+.admin-badge { background: rgba(239,68,68,0.1) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+.btn-refresh { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border: 1.5px solid rgba(26,86,219,0.2) !important; }
+.btn-logout, .btn-logout:not(:hover) { background: transparent !important; border: 1px solid #dce8ff !important; color: #64748b !important; }
+.btn-logout:hover { border-color: #ef4444 !important; color: #ef4444 !important; }
+
+/* MAIN AREA */
+.main { background: #f0f6ff !important; }
+.page-title { color: #1e293b !important; }
+.page-sub { color: #64748b !important; }
+
+/* CARDS */
+.card, .stat-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; box-shadow: 0 2px 12px rgba(26,86,219,0.06) !important; }
+.card-title, .card-header { color: #1e293b !important; }
+
+/* STATS */
+.stat-card::before { opacity: 1 !important; }
+.sc1::before { background: #1a56db !important; }
+.sc2::before { background: #f59e0b !important; }
+.sc3::before { background: #7c3aed !important; }
+.sc4::before { background: #16a34a !important; }
+.stat-val, .value { color: #1e293b !important; }
+.stat-lbl, .label, .sub { color: #64748b !important; }
+.stat-icon { filter: none !important; }
+
+/* TABLE */
+th { color: #64748b !important; border-bottom: 1.5px solid #dce8ff !important; background: #f8faff !important; }
+td { color: #1e293b !important; border-bottom: 1px solid #f0f6ff !important; }
+tr:hover td { background: rgba(26,86,219,0.02) !important; }
+table { background: #ffffff !important; }
+
+/* BADGES */
+.badge-it { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.badge-cse { background: rgba(124,58,237,0.1) !important; color: #7c3aed !important; }
+.badge-ece { background: rgba(249,115,22,0.1) !important; color: #f97316 !important; }
+.badge-eee { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge-mech { background: rgba(239,68,68,0.1) !important; color: #ef4444 !important; }
+.badge-civil { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+
+/* SEARCH */
+.search-bar { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.search-bar:focus { border-color: #1a56db !important; }
+.search-bar::placeholder { color: #94a3b8 !important; }
+
+/* DEPT FILTER BUTTONS */
+.dept-btn { border: 1px solid #dce8ff !important; color: #64748b !important; background: #ffffff !important; }
+.dept-btn:hover { border-color: #1a56db !important; color: #1a56db !important; }
+.dept-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* TASKS */
+.task-item { background: #f8faff !important; border: 1px solid #dce8ff !important; }
+.task-text { color: #1e293b !important; }
+.task-text.done { color: #94a3b8 !important; }
+.task-badge { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.task-check { border: 2px solid #dce8ff !important; }
+.task-check.done { background: #1a56db !important; border-color: #1a56db !important; }
+.add-task-form input, .add-task-form select { background: #f8faff !important; border: 1px solid #dce8ff !important; color: #1e293b !important; }
+.add-btn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* PROGRESS */
+.progress-bar { background: #f0f6ff !important; }
+.progress-fill { background: linear-gradient(90deg, #1a56db, #60a5fa) !important; }
+.progress-label { color: #1e293b !important; }
+
+/* SCORES TABLE */
+.scores-table th { color: #64748b !important; border-bottom: 1px solid #dce8ff !important; }
+.scores-table td { border-bottom: 1px solid #f0f6ff !important; color: #1e293b !important; }
+.badge.basic { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.badge.advanced { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge.quick { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* TOAST */
+.toast { background: rgba(26,86,219,0.95) !important; box-shadow: 0 8px 24px rgba(26,86,219,0.3) !important; }
+
+/* LOADING */
+.loading { color: #64748b !important; }
+.empty { color: #94a3b8 !important; }
+.error-box { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* RANK BADGES */
+.r1 { background: rgba(245,158,11,0.15) !important; color: #d97706 !important; }
+.r2 { background: rgba(148,163,184,0.15) !important; color: #64748b !important; }
+.r3 { background: rgba(180,83,9,0.15) !important; color: #b45309 !important; }
+.rn { background: rgba(100,116,139,0.1) !important; color: #64748b !important; }
+
+/* TOPIC CARDS */
+.topic-card { background: #ffffff !important; border: 2px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.04) !important; }
+.topic-card:hover { border-color: #1a56db !important; box-shadow: 0 8px 24px rgba(26,86,219,0.12) !important; }
+.topic-card.sel-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.t-name { color: #1e293b !important; }
+.t-count { color: #64748b !important; }
+
+/* LEVEL TABS */
+.level-tab { background: #ffffff !important; border: 2px solid #dce8ff !important; color: #64748b !important; }
+.level-tab.active-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.level-step { background: #ffffff !important; border: 2px solid #dce8ff !important; }
+.level-step.active { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.step-title { color: #1e293b !important; }
+.step-sub { color: #64748b !important; }
+.level-banner.basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.level-badge.basic { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.level-desc { color: #64748b !important; }
+.level-desc strong { color: #1e293b !important; }
+
+/* QUIZ */
+.quiz-header { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; }
+.question-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.option-btn { background: #f8faff !important; border: 2px solid #dce8ff !important; color: #1e293b !important; }
+.option-btn:hover { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.option-btn.selected { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.option-btn.correct { border-color: #16a34a !important; background: rgba(22,163,74,0.08) !important; color: #16a34a !important; }
+.option-btn.wrong { border-color: #ef4444 !important; background: rgba(239,68,68,0.08) !important; color: #ef4444 !important; }
+
+/* START BUTTON */
+.btn-start { background: #1a56db !important; color: #ffffff !important; }
+.btn-start:hover:not(:disabled) { background: #1447c0 !important; box-shadow: 0 8px 25px rgba(26,86,219,0.3) !important; }
+.btn-start:disabled { background: #dce8ff !important; color: #94a3b8 !important; }
+
+/* TOOLBAR */
+.toolbar { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.lang-select, select { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.run-btn, #runBtn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* COMPILER */
+.CodeMirror { background: #f8faff !important; color: #1e293b !important; }
+.output-area { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.output-area pre { color: #1e293b !important; }
+
+/* TIPS */
+.tip-card, .shortcut-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.tip-title, .shortcut-title { color: #1e293b !important; }
+.tip-text, .shortcut-text { color: #64748b !important; }
+.category-btn { background: #ffffff !important; border: 1.5px solid #dce8ff !important; color: #64748b !important; }
+.category-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* RESUME */
+.resume-section { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.section-title { color: #1e293b !important; }
+.form-control, .form-input, input[type=text], input[type=email], textarea { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.form-control:focus, input:focus, textarea:focus { border-color: #1a56db !important; }
+.btn-primary { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* AI WEAK AREA */
+.weak-area { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.15) !important; }
+.weak-area h4 { color: #ef4444 !important; }
+.strong-area { background: rgba(22,163,74,0.06) !important; border: 1px solid rgba(22,163,74,0.15) !important; }
+.strong-area h4 { color: #16a34a !important; }
+
+/* ADMIN LOGIN */
+#adminLoginScreen { background: #f0f6ff !important; }
+
+/* SCORE BARS */
+.step-status.done { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.step-status.current { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0f6ff; }
+::-webkit-scrollbar-thumb { background: #dce8ff; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #1a56db; }
+</style>
+
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">🎯</div>
+    <div class="brand-name" style="font-size:13px;line-height:1.3">PEC<br>Placement Portal</div>
+  </div>
+    <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">✅</span> Task Manager</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">🤖</span> AI Detector</a>
+    <a class="nav-item " href="dashboard.html"><span class="nav-icon">📈</span> My Progress</a>
+    <a class="nav-item " href="test.html"><span class="nav-icon">🧪</span> Take a Test</a>
+    <a class="nav-item " href="compiler.html"><span class="nav-icon">💻</span> Code Compiler</a>
+    <a class="nav-item " href="tips.html"><span class="nav-icon">⚡</span> Shortcut Tips</a>
+    <a class="nav-item active" href="resume.html"><span class="nav-icon">📄</span> Resume Builder</a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-info">
+      <div class="user-avatar" id="avatarInitial">M</div>
+      <div>
+        <div class="user-name" id="sidebarName">Midhun</div>
+        <div class="user-role">B.Tech IT · 6th Sem</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">📄 Resume Builder</div>
+      <div class="page-sub">Build a professional ATS-optimized resume · Live scoring as you type</div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="resume-layout">
+    <!-- LEFT: FORM -->
+    <div class="left-col">
+
+      <!-- TARGET ROLE -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-icon">🎯</div>
+          <div class="fch-title">Target Job Role</div>
+          <div class="fch-sub">Affects ATS keyword scoring</div>
+        </div>
+        <div class="form-card-body">
+          <div class="role-chips" id="roleChips">
+            <button class="role-chip active" onclick="setRole('Software Engineer',this)">Software Engineer</button>
+            <button class="role-chip" onclick="setRole('Data Analyst',this)">Data Analyst</button>
+            <button class="role-chip" onclick="setRole('Web Developer',this)">Web Developer</button>
+            <button class="role-chip" onclick="setRole('Java Developer',this)">Java Developer</button>
+            <button class="role-chip" onclick="setRole('ML Engineer',this)">ML Engineer</button>
+            <button class="role-chip" onclick="setRole('DevOps Engineer',this)">DevOps Engineer</button>
+            <button class="role-chip" onclick="setRole('Database Admin',this)">Database Admin</button>
+            <button class="role-chip" onclick="setRole('Network Engineer',this)">Network Engineer</button>
+          </div>
+          <div class="form-row single">
+            <div class="form-group">
+              <label class="form-label">Custom Role</label>
+              <input class="form-input" id="customRole" placeholder="e.g. Product Manager, Android Developer..." oninput="updateATS()"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERSONAL INFO -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-icon">👤</div>
+          <div class="fch-title">Personal Information</div>
+        </div>
+        <div class="form-card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name <span class="required">*</span></label>
+              <input class="form-input" id="fullName" placeholder="e.g. Midhun R" oninput="updateATS()"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone <span class="required">*</span></label>
+              <input class="form-input" id="phone" placeholder="+91 9876543210" oninput="updateATS()"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input class="form-input" id="email" placeholder="yourname@gmail.com" oninput="updateATS()"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">LinkedIn URL</label>
+              <input class="form-input" id="linkedin" placeholder="linkedin.com/in/yourname" oninput="updateATS()"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">GitHub URL</label>
+              <input class="form-input" id="github" placeholder="github.com/yourname" oninput="updateATS()"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Location</label>
+              <input class="form-input" id="location" placeholder="Chennai, Tamil Nadu" oninput="updateATS()"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUMMARY -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-icon">📝</div>
+          <div class="fch-title">Professional Summary</div>
+          <div class="fch-sub">3–5 sentences recommended</div>
+        </div>
+        <div class="form-card-body">
+          <div class="form-group">
+            <label class="form-label">Summary <span class="required">*</span></label>
+            <textarea class="form-textarea" id="summary" placeholder="e.g. Motivated B.Tech IT graduate with strong foundations in Java, Python, and web technologies. Experienced in building scalable applications. Seeking a Software Engineer role to apply my technical skills..." style="min-height:110px" oninput="updateATS()"></textarea>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">💡 Include your target role keyword, years of experience, and 2-3 key skills for better ATS score</div>
+        </div>
+      </div>
+
+      <!-- EDUCATION -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-icon">🎓</div>
+          <div class="fch-title">Education</div>
+        </div>
+        <div class="form-card-body">
+          <div id="educationList"></div>
+          <button class="btn-add" onclick="addEdu()">+ Add Education</button>
+        </div>
+      </div>
+
+      <!-- EXPERIENCE -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-icon">💼</div>
+          <div class="fch-title">Work Experience / Internship</div>
+        </div>
+        <div class="form-card-body">
+          <div id="expList"></div>
+          <button class="btn-add" onclick="addExp()">+ Add Experience / Internship</button>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-icon">🚀</div>
+          <div class="fch-title">Projects</div>
+        </div>
+        <div class="form-card-body">
+          <div id="projectList"></div>
+          <button class="btn-add" onclick="addProject()">+ Add Project</button>
+        </div>
+      </div>
+
+      <!-- SKILLS -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-icon">⚙️</div>
+          <div class="fch-title">Technical Skills</div>
+          <div class="fch-sub">Most critical for ATS</div>
+        </div>
+        <div class="form-card-body">
+          <div class="skills-container" id="skillsContainer"></div>
+          <div class="skill-input-row">
+            <input class="form-input" id="skillInput" placeholder="Type a skill and press Add (e.g. Python, Java, React...)" onkeydown="if(event.key==='Enter')addSkill()"/>
+            <button class="btn-add-skill" onclick="addSkill()">Add</button>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:10px">💡 Suggested:
+            <span id="suggestedSkills" style="color:var(--teal);cursor:pointer" onclick="addSuggestedSkills()">Click to add role-based skills</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CERTIFICATIONS -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="fch-icon">🏅</div>
+          <div class="fch-title">Certifications & Achievements</div>
+        </div>
+        <div class="form-card-body">
+          <div id="certList"></div>
+          <button class="btn-add" onclick="addCert()">+ Add Certification</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: ATS PANEL -->
+    <div class="right-col">
+      <div class="ats-panel">
+        <div class="ats-header">
+          <div style="font-size:15px;font-weight:700;margin-bottom:14px">📊 ATS Score Checker</div>
+          <div class="ats-score-row">
+            <div class="ats-score-circle" id="atsCircle" style="border-color:var(--red);color:var(--red)">
+              <div class="ats-score-num" id="atsScoreNum">0</div>
+              <div class="ats-score-label">/ 100</div>
+            </div>
+            <div>
+              <div class="ats-grade" id="atsGrade" style="color:var(--red)">Not Started</div>
+              <div class="ats-grade-sub" id="atsGradeSub">Fill in your resume to see your ATS score</div>
+            </div>
+          </div>
+
+          <!-- Section scores -->
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Section Breakdown</div>
+          <div id="sectionBreakdown"></div>
+        </div>
+
+        <div class="ats-body">
+          <div style="font-size:14px;font-weight:700;margin-bottom:12px">✅ ATS Checklist</div>
+          <div class="ats-checks" id="atsChecks"></div>
+
+          <div class="action-btns">
+            <button class="btn-preview" onclick="showPreview()">👁️ Preview Resume</button>
+            <button class="btn-download" onclick="downloadResume()">⬇️ Download PDF</button>
+          </div>
+          <button class="btn-tips-ats" onclick="toggleAtsTips()">💡 ATS Optimization Tips</button>
+
+          <div class="ats-tips-panel" id="atsTipsPanel">
+            <div style="font-size:13px;font-weight:700;color:var(--purple);margin-bottom:10px">🚀 How to Beat ATS</div>
+            <div class="ats-tip-item"><span class="tip-bullet">→</span><span>Use the exact job title in your summary (e.g. "Software Engineer" not "SE")</span></div>
+            <div class="ats-tip-item"><span class="tip-bullet">→</span><span>Add keywords from the job description verbatim into skills and experience</span></div>
+            <div class="ats-tip-item"><span class="tip-bullet">→</span><span>Avoid tables, headers/footers, and images — ATS parsers can't read them</span></div>
+            <div class="ats-tip-item"><span class="tip-bullet">→</span><span>Use standard section headings: "Experience", "Education", "Skills"</span></div>
+            <div class="ats-tip-item"><span class="tip-bullet">→</span><span>Use bullet points with action verbs: "Developed", "Implemented", "Optimized"</span></div>
+            <div class="ats-tip-item"><span class="tip-bullet">→</span><span>Spell out acronyms at least once: "Machine Learning (ML)"</span></div>
+            <div class="ats-tip-item"><span class="tip-bullet">→</span><span>Include LinkedIn & GitHub — many ATS systems rank these profiles</span></div>
+            <div class="ats-tip-item"><span class="tip-bullet">→</span><span>Keep formatting clean: standard fonts, no columns (single column is safer)</span></div>
+            <div class="ats-tip-item"><span class="tip-bullet">→</span><span>Quantify achievements: "Improved load time by 40%", "Managed team of 5"</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-box">
+    <div class="modal-top">
+      <div class="modal-title">📄 Resume Preview</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button onclick="downloadResume()" style="padding:8px 16px;background:#FFD166;color:#050F1A;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">⬇️ Download</button>
+        <button class="modal-close" onclick="closePreview()">✕</button>
+      </div>
+    </div>
+    <div class="resume-preview" id="resumePreview"></div>
+  </div>
+</div>
+
+<script>
+const token = localStorage.getItem('pt_token');
+const student = JSON.parse(localStorage.getItem('pt_student') || '{}');
+const currentEmail = student.email || '';
+if (!token) window.location.href = 'index.html';
+
+const user = { name: student.name || 'Student', department: student.department || 'IT', semester: student.semester || 6 };
+const firstName = user.name.split(' ')[0];
+document.getElementById('sidebarName').textContent = firstName;
+document.getElementById('avatarInitial').textContent = firstName[0].toUpperCase();
+function logout() { localStorage.removeItem('pt_token'); localStorage.removeItem('pt_student'); window.location.href = 'index.html'; }
+
+// ── STATE ──
+let targetRole = 'Software Engineer';
+let skills = [];
+let eduItems = [], expItems = [], projItems = [], certItems = [];
+
+const ROLE_KEYWORDS = {
+  'Software Engineer': ['java','python','c++','data structures','algorithms','git','sql','rest api','oop','linux','problem solving','agile'],
+  'Data Analyst': ['python','sql','excel','tableau','power bi','statistics','data visualization','pandas','numpy','machine learning'],
+  'Web Developer': ['html','css','javascript','react','node.js','bootstrap','rest api','git','mongodb','responsive design'],
+  'Java Developer': ['java','spring boot','hibernate','maven','sql','rest api','microservices','junit','git','oop'],
+  'ML Engineer': ['python','machine learning','tensorflow','pytorch','scikit-learn','numpy','pandas','deep learning','nlp','statistics'],
+  'DevOps Engineer': ['docker','kubernetes','ci/cd','linux','aws','git','jenkins','terraform','shell scripting','monitoring'],
+  'Database Admin': ['sql','mysql','postgresql','oracle','mongodb','backup','performance tuning','indexing','stored procedures'],
+  'Network Engineer': ['networking','tcp/ip','routing','cisco','firewall','vpn','linux','troubleshooting','wan','lan'],
+};
+
+function setRole(role, el) {
+  targetRole = role;
+  document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('customRole').value = '';
+  updateSuggestedSkills();
+  updateATS();
+}
+
+function updateSuggestedSkills() {
+  const kws = ROLE_KEYWORDS[targetRole] || [];
+  const missing = kws.filter(k => !skills.map(s=>s.toLowerCase()).includes(k));
+  document.getElementById('suggestedSkills').textContent = missing.slice(0,6).join(', ') + (missing.length>6?'...':'');
+}
+
+function addSuggestedSkills() {
+  const kws = ROLE_KEYWORDS[targetRole] || [];
+  kws.slice(0,6).forEach(k => { if(!skills.map(s=>s.toLowerCase()).includes(k)) skills.push(k); });
+  renderSkills(); updateATS();
+}
+
+// ── SKILLS ──
+function addSkill() {
+  const val = document.getElementById('skillInput').value.trim();
+  if (val && !skills.includes(val)) { skills.push(val); renderSkills(); updateATS(); }
+  document.getElementById('skillInput').value = '';
+}
+function removeSkill(i) { skills.splice(i,1); renderSkills(); updateATS(); }
+function renderSkills() {
+  document.getElementById('skillsContainer').innerHTML = skills.map((s,i)=>
+    `<div class="skill-tag">${s}<span class="remove-skill" onclick="removeSkill(${i})">✕</span></div>`
+  ).join('');
+  updateSuggestedSkills();
+}
+
+// ── EDU ──
+let eduCount = 0;
+function addEdu() {
+  const id = ++eduCount;
+  eduItems.push({id});
+  const div = document.createElement('div');
+  div.className = 'section-item';
+  div.id = 'edu-'+id;
+  div.innerHTML = `
+    <button class="del-btn" onclick="removeEdu(${id})">🗑️</button>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Degree / Course</label>
+        <input class="form-input" id="edu-degree-${id}" placeholder="e.g. B.Tech Information Technology" oninput="updateATS()"/></div>
+      <div class="form-group"><label class="form-label">College / University</label>
+        <input class="form-input" id="edu-college-${id}" placeholder="e.g. Anna University" oninput="updateATS()"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Year (From – To)</label>
+        <input class="form-input" id="edu-year-${id}" placeholder="e.g. 2021 – 2025" oninput="updateATS()"/></div>
+      <div class="form-group"><label class="form-label">CGPA / Percentage</label>
+        <input class="form-input" id="edu-cgpa-${id}" placeholder="e.g. 8.5 CGPA or 85%" oninput="updateATS()"/></div>
+    </div>`;
+  document.getElementById('educationList').appendChild(div);
+}
+function removeEdu(id) { document.getElementById('edu-'+id).remove(); eduItems=eduItems.filter(e=>e.id!==id); updateATS(); }
+
+// ── EXP ──
+let expCount = 0;
+function addExp() {
+  const id = ++expCount;
+  expItems.push({id});
+  const div = document.createElement('div');
+  div.className = 'section-item'; div.id = 'exp-'+id;
+  div.innerHTML = `
+    <button class="del-btn" onclick="removeExp(${id})">🗑️</button>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Company / Organization</label>
+        <input class="form-input" id="exp-company-${id}" placeholder="e.g. TCS, Infosys..." oninput="updateATS()"/></div>
+      <div class="form-group"><label class="form-label">Role / Designation</label>
+        <input class="form-input" id="exp-role-${id}" placeholder="e.g. Software Intern" oninput="updateATS()"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Duration</label>
+        <input class="form-input" id="exp-dur-${id}" placeholder="e.g. Jun 2024 – Aug 2024" oninput="updateATS()"/></div>
+      <div class="form-group"><label class="form-label">Location</label>
+        <input class="form-input" id="exp-loc-${id}" placeholder="e.g. Chennai / Remote" oninput="updateATS()"/></div>
+    </div>
+    <div class="form-group" style="margin-top:10px"><label class="form-label">Key Responsibilities & Achievements</label>
+      <textarea class="form-textarea" id="exp-desc-${id}" placeholder="• Developed REST APIs using Java Spring Boot&#10;• Improved query performance by 30% using indexing&#10;• Collaborated with a 5-member team on Agile sprints" oninput="updateATS()"></textarea></div>`;
+  document.getElementById('expList').appendChild(div);
+}
+function removeExp(id) { document.getElementById('exp-'+id).remove(); expItems=expItems.filter(e=>e.id!==id); updateATS(); }
+
+// ── PROJECTS ──
+let projCount = 0;
+function addProject() {
+  const id = ++projCount;
+  projItems.push({id});
+  const div = document.createElement('div');
+  div.className='section-item'; div.id='proj-'+id;
+  div.innerHTML=`
+    <button class="del-btn" onclick="removeProj(${id})">🗑️</button>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Project Title</label>
+        <input class="form-input" id="proj-title-${id}" placeholder="e.g. Placement Portal System" oninput="updateATS()"/></div>
+      <div class="form-group"><label class="form-label">Technologies Used</label>
+        <input class="form-input" id="proj-tech-${id}" placeholder="e.g. React, Node.js, MongoDB" oninput="updateATS()"/></div>
+    </div>
+    <div class="form-group" style="margin-top:8px"><label class="form-label">Description</label>
+      <textarea class="form-textarea" id="proj-desc-${id}" placeholder="Brief description of what you built, your role, and the impact..." oninput="updateATS()" style="min-height:70px"></textarea></div>
+    <div class="form-group" style="margin-top:8px"><label class="form-label">GitHub / Live Link (optional)</label>
+      <input class="form-input" id="proj-link-${id}" placeholder="https://github.com/..." oninput="updateATS()"/></div>`;
+  document.getElementById('projectList').appendChild(div);
+}
+function removeProj(id) { document.getElementById('proj-'+id).remove(); projItems=projItems.filter(p=>p.id!==id); updateATS(); }
+
+// ── CERTS ──
+let certCount = 0;
+function addCert() {
+  const id = ++certCount;
+  certItems.push({id});
+  const div = document.createElement('div');
+  div.className='section-item'; div.id='cert-'+id;
+  div.innerHTML=`
+    <button class="del-btn" onclick="removeCert(${id})">🗑️</button>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Certification / Achievement</label>
+        <input class="form-input" id="cert-name-${id}" placeholder="e.g. AWS Cloud Practitioner, HackerRank Java" oninput="updateATS()"/></div>
+      <div class="form-group"><label class="form-label">Issuer & Year</label>
+        <input class="form-input" id="cert-org-${id}" placeholder="e.g. Amazon Web Services, 2024" oninput="updateATS()"/></div>
+    </div>`;
+  document.getElementById('certList').appendChild(div);
+}
+function removeCert(id) { document.getElementById('cert-'+id).remove(); certItems=certItems.filter(c=>c.id!==id); updateATS(); }
+
+// ── ATS SCORING ──
+function updateATS() {
+  const role = document.getElementById('customRole').value.trim() || targetRole;
+  const name = document.getElementById('fullName').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const linkedin = document.getElementById('linkedin').value.trim();
+  const github = document.getElementById('github').value.trim();
+  const summary = document.getElementById('summary').value.trim();
+
+  const roleKws = ROLE_KEYWORDS[targetRole] || [];
+  const allText = (summary + ' ' + skills.join(' ')).toLowerCase();
+
+  // Section scores (each out of stated max)
+  const sections = [
+    {
+      label:'Contact Info', max:15,
+      score: (name?5:0)+(phone?4:0)+(email?4:0)+(linkedin?1:0)+(github?1:0),
+      detail: `Name(5) Phone(4) Email(4) LinkedIn(1) GitHub(1)`
+    },
+    {
+      label:'Summary', max:20,
+      score: summary.length===0?0:summary.length<50?5:summary.length<150?10:
+             (() => {
+               let s=12;
+               if(roleKws.some(k=>summary.toLowerCase().includes(k))) s+=4;
+               if(summary.length>200) s+=4;
+               return Math.min(s,20);
+             })(),
+      detail:'Quality & keyword match'
+    },
+    {
+      label:'Education', max:15,
+      score:(()=>{
+        const hasDeg = document.getElementById('educationList').querySelectorAll('.section-item').length > 0;
+        if(!hasDeg) return 0;
+        let s=8;
+        const eduDiv = document.getElementById('educationList');
+        if(eduDiv.querySelector('[id^="edu-degree-"]')?.value) s+=4;
+        if(eduDiv.querySelector('[id^="edu-cgpa-"]')?.value) s+=3;
+        return Math.min(s,15);
+      })(),
+      detail:'Degree, college, CGPA'
+    },
+    {
+      label:'Experience', max:20,
+      score:(()=>{
+        const expDivs = document.getElementById('expList').querySelectorAll('.section-item');
+        if(expDivs.length===0) return 0;
+        let s=10;
+        expDivs.forEach(d=>{
+          const desc=d.querySelector('[id^="exp-desc-"]')?.value||'';
+          if(desc.length>100) s+=5;
+        });
+        return Math.min(s,20);
+      })(),
+      detail:'Internships & work history'
+    },
+    {
+      label:'Skills', max:20,
+      score:(()=>{
+        if(skills.length===0) return 0;
+        const matched = roleKws.filter(k=>skills.map(s=>s.toLowerCase()).includes(k)).length;
+        const base = Math.min(skills.length*2,10);
+        const kwBonus = Math.min(matched*2,10);
+        return Math.min(base+kwBonus,20);
+      })(),
+      detail:`${skills.length} skills, keyword match`
+    },
+    {
+      label:'Projects', max:10,
+      score:(()=>{
+        const ps = document.getElementById('projectList').querySelectorAll('.section-item');
+        if(ps.length===0) return 0;
+        return Math.min(ps.length*4,10);
+      })(),
+      detail:'Practical work shown'
+    },
+  ];
+
+  const total = sections.reduce((a,s)=>a+s.score,0);
+
+  // Update circle
+  const circle=document.getElementById('atsCircle');
+  const num=document.getElementById('atsScoreNum');
+  const grade=document.getElementById('atsGrade');
+  const gradeSub=document.getElementById('atsGradeSub');
+  num.textContent=total;
+  let col,gradeText,subText;
+  if(total>=85){col='#22C55E';gradeText='Excellent ⭐';subText='ATS-optimized! Ready to submit.';}
+  else if(total>=70){col='#02C5A0';gradeText='Good 👍';subText='Strong resume. Minor improvements possible.';}
+  else if(total>=50){col='#FFD166';gradeText='Average 📝';subText='Add more sections and keywords.';}
+  else{col='#FF6B6B';gradeText='Needs Work ⚠️';subText='Fill in all sections for a better score.';}
+  circle.style.borderColor=col;circle.style.color=col;
+  grade.style.color=col;grade.textContent=gradeText;gradeSub.textContent=subText;
+
+  // Section breakdown
+  document.getElementById('sectionBreakdown').innerHTML = sections.map(s=>`
+    <div style="margin-bottom:10px">
+      <div class="ats-section-score"><span>${s.label}</span><span>${s.score}/${s.max}</span></div>
+      <div class="ats-progress"><div class="ats-progress-fill" style="width:${(s.score/s.max)*100}%;background:${s.score/s.max>0.7?'#22C55E':s.score/s.max>0.4?'#FFD166':'#FF6B6B'}"></div></div>
+    </div>`).join('');
+
+  // Checklist
+  const checks=[
+    {icon:'👤',title:'Full Name present',detail:'Essential for ATS parsing',pass:!!name},
+    {icon:'📧',title:'Email address added',detail:'Required contact info',pass:!!email},
+    {icon:'📱',title:'Phone number added',detail:'Required contact info',pass:!!phone},
+    {icon:'🔗',title:'LinkedIn profile added',detail:'+ATS ranking boost',pass:!!linkedin,warn:true},
+    {icon:'💻',title:'GitHub profile added',detail:'Shows technical work',pass:!!github,warn:true},
+    {icon:'📝',title:'Professional summary written',detail:'First thing ATS scans',pass:summary.length>80},
+    {icon:'🎓',title:'Education section filled',detail:'Degree & institution required',pass:document.getElementById('educationList').querySelectorAll('.section-item').length>0},
+    {icon:'⚙️',title:`Skills match target role`,detail:`${roleKws.filter(k=>skills.map(s=>s.toLowerCase()).includes(k)).length}/${roleKws.length} keywords matched`,pass:roleKws.filter(k=>skills.map(s=>s.toLowerCase()).includes(k)).length>=4},
+    {icon:'🚀',title:'Projects section added',detail:'Critical for freshers',pass:document.getElementById('projectList').querySelectorAll('.section-item').length>0},
+    {icon:'🏅',title:'Certifications added',detail:'Boosts credibility',pass:document.getElementById('certList').querySelectorAll('.section-item').length>0,warn:true},
+    {icon:'📊',title:'Summary contains role keywords',detail:'Key ATS requirement',pass:roleKws.some(k=>summary.toLowerCase().includes(k))},
+    {icon:'✍️',title:'Summary length is good (>150 chars)',detail:'Detailed enough for ATS',pass:summary.length>150},
+  ];
+
+  document.getElementById('atsChecks').innerHTML = checks.map(c=>{
+    const cls = c.pass?'pass':c.warn?'warn':'fail';
+    const icon = c.pass?'✅':c.warn?'⚠️':'❌';
+    return `<div class="ats-check ${cls}">
+      <div class="ats-check-icon">${icon}</div>
+      <div class="ats-check-text">
+        <div class="check-title">${c.icon} ${c.title}</div>
+        <div class="check-detail">${c.detail}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAtsTips() {
+  const p=document.getElementById('atsTipsPanel');
+  p.classList.toggle('show');
+}
+
+// ── PREVIEW ──
+function getResumeData() {
+  const name=document.getElementById('fullName').value||'Your Name';
+  const phone=document.getElementById('phone').value;
+  const email=document.getElementById('email').value;
+  const linkedin=document.getElementById('linkedin').value;
+  const github=document.getElementById('github').value;
+  const loc=document.getElementById('location').value;
+  const summary=document.getElementById('summary').value;
+
+  const edus=[];
+  document.getElementById('educationList').querySelectorAll('.section-item').forEach(d=>{
+    const id=d.id.replace('edu-','');
+    edus.push({
+      degree:document.getElementById('edu-degree-'+id)?.value||'',
+      college:document.getElementById('edu-college-'+id)?.value||'',
+      year:document.getElementById('edu-year-'+id)?.value||'',
+      cgpa:document.getElementById('edu-cgpa-'+id)?.value||'',
+    });
+  });
+
+  const exps=[];
+  document.getElementById('expList').querySelectorAll('.section-item').forEach(d=>{
+    const id=d.id.replace('exp-','');
+    exps.push({
+      company:document.getElementById('exp-company-'+id)?.value||'',
+      role:document.getElementById('exp-role-'+id)?.value||'',
+      dur:document.getElementById('exp-dur-'+id)?.value||'',
+      loc:document.getElementById('exp-loc-'+id)?.value||'',
+      desc:document.getElementById('exp-desc-'+id)?.value||'',
+    });
+  });
+
+  const projs=[];
+  document.getElementById('projectList').querySelectorAll('.section-item').forEach(d=>{
+    const id=d.id.replace('proj-','');
+    projs.push({
+      title:document.getElementById('proj-title-'+id)?.value||'',
+      tech:document.getElementById('proj-tech-'+id)?.value||'',
+      desc:document.getElementById('proj-desc-'+id)?.value||'',
+      link:document.getElementById('proj-link-'+id)?.value||'',
+    });
+  });
+
+  const certs=[];
+  document.getElementById('certList').querySelectorAll('.section-item').forEach(d=>{
+    const id=d.id.replace('cert-','');
+    certs.push({
+      name:document.getElementById('cert-name-'+id)?.value||'',
+      org:document.getElementById('cert-org-'+id)?.value||'',
+    });
+  });
+
+  return {name,phone,email,linkedin,github,loc,summary,edus,exps,projs,certs,skills};
+}
+
+function buildResumeHTML(d) {
+  const contact=[d.phone,d.email,d.linkedin,d.github,d.loc].filter(Boolean).join(' | ');
+  let html=`<div class="rp-name">${d.name}</div>`;
+  if(contact) html+=`<div class="rp-contact">${contact}</div>`;
+  html+=`<div class="rp-line"></div>`;
+  if(d.summary){html+=`<div class="rp-section-title">Professional Summary</div><div class="rp-summary">${d.summary}</div>`;}
+
+  if(d.edus.length){
+    html+=`<div class="rp-section-title">Education</div>`;
+    d.edus.forEach(e=>{
+      if(!e.degree) return;
+      html+=`<div class="rp-edu-item">
+        <div class="rp-exp-header"><span class="rp-company">${e.degree}</span><span class="rp-date">${e.year}</span></div>
+        <div class="rp-role">${e.college}${e.cgpa?' · '+e.cgpa:''}</div>
+      </div>`;
+    });
+  }
+
+  if(d.exps.length){
+    html+=`<div class="rp-section-title">Work Experience</div>`;
+    d.exps.forEach(e=>{
+      if(!e.company) return;
+      html+=`<div class="rp-exp-item">
+        <div class="rp-exp-header"><span class="rp-company">${e.company}</span><span class="rp-date">${e.dur}</span></div>
+        <div class="rp-role">${e.role}${e.loc?' · '+e.loc:''}</div>`;
+      if(e.desc){
+        const bullets=e.desc.split('\n').filter(l=>l.trim());
+        html+=`<ul class="rp-bullets">${bullets.map(b=>`<li>${b.replace(/^[•\-\*]\s*/,'')}</li>`).join('')}</ul>`;
+      }
+      html+=`</div>`;
+    });
+  }
+
+  if(d.skills.length){
+    html+=`<div class="rp-section-title">Technical Skills</div>`;
+    html+=`<div class="rp-skills-row">${d.skills.map(s=>`<span class="rp-skill">${s}</span>`).join('')}</div>`;
+  }
+
+  if(d.projs.length){
+    html+=`<div class="rp-section-title">Projects</div>`;
+    d.projs.forEach(p=>{
+      if(!p.title) return;
+      html+=`<div class="rp-proj-item">
+        <div class="rp-exp-header"><span class="rp-proj-title">${p.title}</span>${p.link?`<span style="font-size:12px;color:#0066cc">${p.link}</span>`:''}</div>
+        ${p.tech?`<div class="rp-proj-tech">Tech: ${p.tech}</div>`:''}
+        ${p.desc?`<div class="rp-proj-desc">${p.desc}</div>`:''}
+      </div>`;
+    });
+  }
+
+  if(d.certs.length){
+    html+=`<div class="rp-section-title">Certifications & Achievements</div>`;
+    d.certs.forEach(c=>{
+      if(!c.name) return;
+      html+=`<div class="rp-cert-item">🏅 <strong>${c.name}</strong>${c.org?' — '+c.org:''}</div>`;
+    });
+  }
+  return html;
+}
+
+function showPreview() {
+  const d=getResumeData();
+  document.getElementById('resumePreview').innerHTML=buildResumeHTML(d);
+  document.getElementById('previewModal').classList.add('show');
+}
+function closePreview() { document.getElementById('previewModal').classList.remove('show'); }
+
+function downloadResume() {
+  const d=getResumeData();
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>
+      body{font-family:'Times New Roman',serif;color:#111;padding:40px;max-width:800px;margin:0 auto;font-size:13px;line-height:1.4}
+      .rp-name{font-size:28px;font-weight:700;text-align:center;margin-bottom:4px}
+      .rp-contact{text-align:center;font-size:12px;color:#444;margin-bottom:6px}
+      .rp-line{height:2px;background:#111;margin:10px 0}
+      .rp-section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #333;padding-bottom:3px;margin:14px 0 8px}
+      .rp-summary{font-size:12px;color:#222;margin-bottom:10px}
+      .rp-exp-item,.rp-edu-item{margin-bottom:10px}
+      .rp-exp-header{display:flex;justify-content:space-between}
+      .rp-company{font-size:13px;font-weight:700}
+      .rp-date{font-size:11px;color:#555}
+      .rp-role{font-size:12px;font-style:italic;color:#333;margin-bottom:4px}
+      .rp-bullets{padding-left:20px;font-size:12px;color:#222}
+      .rp-bullets li{margin-bottom:3px}
+      .rp-skills-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+      .rp-skill{padding:2px 8px;background:#f0f0f0;border-radius:10px;font-size:11px;font-weight:600}
+      .rp-proj-item{margin-bottom:8px}
+      .rp-proj-title{font-size:13px;font-weight:700}
+      .rp-proj-tech{font-size:11px;color:#555;margin-bottom:2px}
+      .rp-proj-desc{font-size:12px}
+      .rp-cert-item{font-size:12px;margin-bottom:4px}
+    </style>
+  </head><body>${buildResumeHTML(d)}</body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(d.name.replace(/\s+/g,'_')+'_Resume.html');
+  a.click();
+}
+
+// Init
+addEdu();
+updateSuggestedSkills();
+updateATS();
+</script>
+</body>
+</html>

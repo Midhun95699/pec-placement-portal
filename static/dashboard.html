@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PEC Placement Portal – Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#0f0e17;color:#fff;min-height:100vh;display:flex;}
+.sidebar{width:240px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08);padding:24px 16px;display:flex;flex-direction:column;position:fixed;height:100vh;overflow-y:auto;}
+.sidebar-logo{padding:8px 12px;margin-bottom:28px;}
+.sidebar-logo h2{font-size:16px;font-weight:700;color:#fff;}
+.sidebar-logo p{font-size:12px;color:rgba(255,255,255,0.4);margin-top:2px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:4px;transition:.2s;text-decoration:none;}
+.nav-item:hover,.nav-item.active{background:rgba(102,126,234,0.15);color:#fff;}
+.nav-item.active{border-left:3px solid #667eea;}
+.nav-icon{font-size:18px;width:22px;text-align:center;}
+.sidebar-bottom{margin-top:auto;}
+.student-info{background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;margin-bottom:12px;}
+.student-info .name{font-weight:600;font-size:14px;}
+.student-info .dept{font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;}
+.logout-btn{width:100%;padding:10px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.2);border-radius:10px;color:#ff8080;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;}
+.logout-btn:hover{background:rgba(255,80,80,0.25);}
+.main{margin-left:240px;flex:1;padding:32px;}
+.page{display:none;}
+.page.active{display:block;}
+.page-title{font-size:22px;font-weight:700;margin-bottom:6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:28px;}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.stat-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;}
+.stat-card .label{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.stat-card .value{font-size:28px;font-weight:700;}
+.stat-card .sub{font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;margin-bottom:20px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.card-title{font-size:16px;font-weight:600;}
+.add-task-form{display:flex;gap:10px;margin-bottom:20px;}
+.add-task-form input,.add-task-form select{flex:1;padding:10px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#fff;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.add-task-form input::placeholder{color:rgba(255,255,255,0.3);}
+.add-btn{padding:10px 20px;background:linear-gradient(135deg,#667eea,#764ba2);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.task-item{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.06);}
+.task-check{width:20px;height:20px;border-radius:6px;border:2px solid rgba(255,255,255,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;}
+.task-check.done{background:#667eea;border-color:#667eea;}
+.task-text{flex:1;font-size:14px;}
+.task-text.done{text-decoration:line-through;color:rgba(255,255,255,0.4);}
+.task-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(102,126,234,0.2);color:#a5b4fc;}
+.del-btn{background:none;border:none;color:rgba(255,80,80,0.5);cursor:pointer;font-size:16px;padding:4px;}
+.del-btn:hover{color:#ff8080;}
+.progress-item{margin-bottom:16px;}
+.progress-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
+.progress-bar{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:4px;transition:width .5s;}
+.scores-table{width:100%;border-collapse:collapse;}
+.scores-table th{text-align:left;padding:10px 14px;font-size:12px;color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.08);}
+.scores-table td{padding:10px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge.basic{background:rgba(80,200,120,0.15);color:#50c878;}
+.badge.advanced{background:rgba(255,165,0,0.15);color:#ffa500;}
+.badge.quick{background:rgba(102,126,234,0.15);color:#a5b4fc;}
+.empty{text-align:center;padding:32px;color:rgba(255,255,255,0.3);font-size:14px;}
+.weak-area{background:rgba(255,100,100,0.08);border:1px solid rgba(255,100,100,0.15);border-radius:12px;padding:16px;margin-bottom:12px;}
+.weak-area h4{color:#ff8080;font-size:14px;margin-bottom:6px;}
+.weak-area p{font-size:12px;color:rgba(255,255,255,0.5);}
+.strong-area{background:rgba(80,200,120,0.08);border:1px solid rgba(80,200,120,0.15);border-radius:12px;padding:16px;margin-bottom:12px;}
+.strong-area h4{color:#50c878;font-size:14px;margin-bottom:6px;}
+.strong-area p{font-size:12px;color:rgba(255,255,255,0.5);}
+.loading{text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:14px;}
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(102,126,234,0.95);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;display:none;}
+</style>
+
+<!-- BLUE WHITE THEME OVERRIDE -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --teal: #1a56db !important;
+  --navy: #f0f6ff !important;
+  --navy2: #ffffff !important;
+  --card: #ffffff !important;
+  --border: #dce8ff !important;
+  --text: #1e293b !important;
+  --muted: #64748b !important;
+  --accent: #f59e0b !important;
+  --red: #ef4444 !important;
+  --green: #16a34a !important;
+  --orange: #f97316 !important;
+  --purple: #7c3aed !important;
+}
+* { font-family: 'Outfit', sans-serif !important; }
+body { background: #f0f6ff !important; color: #1e293b !important; }
+
+/* SIDEBAR */
+.sidebar { background: #ffffff !important; border-right: 1.5px solid #dce8ff !important; box-shadow: 2px 0 12px rgba(26,86,219,0.06) !important; }
+.sidebar-brand, .sidebar-logo { border-bottom: 1.5px solid #dce8ff !important; }
+.brand-name, .sidebar-logo h2 { color: #1a56db !important; }
+.sidebar-logo p { color: #64748b !important; }
+.brand-icon { background: #1a56db !important; color: #fff !important; }
+.nav-label { color: #94a3b8 !important; }
+.nav-item { color: #64748b !important; }
+.nav-item:hover { background: rgba(26,86,219,0.06) !important; color: #1a56db !important; }
+.nav-item.active { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border-left: 3px solid #1a56db !important; }
+.nav-icon { color: inherit !important; }
+.sidebar-bottom { border-top: 1.5px solid #dce8ff !important; }
+
+/* USER INFO */
+.user-info, .student-info { background: #f0f6ff !important; border: 1px solid #dce8ff !important; }
+.user-name, .name { color: #1e293b !important; }
+.user-role, .dept { color: #64748b !important; }
+.user-avatar { background: #1a56db !important; color: #fff !important; }
+.logout-btn { background: rgba(239,68,68,0.08) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* TOPBAR */
+.topbar { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.06) !important; }
+.brand, .brand-name { color: #1a56db !important; }
+.admin-badge { background: rgba(239,68,68,0.1) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+.btn-refresh { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; border: 1.5px solid rgba(26,86,219,0.2) !important; }
+.btn-logout, .btn-logout:not(:hover) { background: transparent !important; border: 1px solid #dce8ff !important; color: #64748b !important; }
+.btn-logout:hover { border-color: #ef4444 !important; color: #ef4444 !important; }
+
+/* MAIN AREA */
+.main { background: #f0f6ff !important; }
+.page-title { color: #1e293b !important; }
+.page-sub { color: #64748b !important; }
+
+/* CARDS */
+.card, .stat-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; box-shadow: 0 2px 12px rgba(26,86,219,0.06) !important; }
+.card-title, .card-header { color: #1e293b !important; }
+
+/* STATS */
+.stat-card::before { opacity: 1 !important; }
+.sc1::before { background: #1a56db !important; }
+.sc2::before { background: #f59e0b !important; }
+.sc3::before { background: #7c3aed !important; }
+.sc4::before { background: #16a34a !important; }
+.stat-val, .value { color: #1e293b !important; }
+.stat-lbl, .label, .sub { color: #64748b !important; }
+.stat-icon { filter: none !important; }
+
+/* TABLE */
+th { color: #64748b !important; border-bottom: 1.5px solid #dce8ff !important; background: #f8faff !important; }
+td { color: #1e293b !important; border-bottom: 1px solid #f0f6ff !important; }
+tr:hover td { background: rgba(26,86,219,0.02) !important; }
+table { background: #ffffff !important; }
+
+/* BADGES */
+.badge-it { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.badge-cse { background: rgba(124,58,237,0.1) !important; color: #7c3aed !important; }
+.badge-ece { background: rgba(249,115,22,0.1) !important; color: #f97316 !important; }
+.badge-eee { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge-mech { background: rgba(239,68,68,0.1) !important; color: #ef4444 !important; }
+.badge-civil { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+
+/* SEARCH */
+.search-bar { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.search-bar:focus { border-color: #1a56db !important; }
+.search-bar::placeholder { color: #94a3b8 !important; }
+
+/* DEPT FILTER BUTTONS */
+.dept-btn { border: 1px solid #dce8ff !important; color: #64748b !important; background: #ffffff !important; }
+.dept-btn:hover { border-color: #1a56db !important; color: #1a56db !important; }
+.dept-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* TASKS */
+.task-item { background: #f8faff !important; border: 1px solid #dce8ff !important; }
+.task-text { color: #1e293b !important; }
+.task-text.done { color: #94a3b8 !important; }
+.task-badge { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.task-check { border: 2px solid #dce8ff !important; }
+.task-check.done { background: #1a56db !important; border-color: #1a56db !important; }
+.add-task-form input, .add-task-form select { background: #f8faff !important; border: 1px solid #dce8ff !important; color: #1e293b !important; }
+.add-btn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* PROGRESS */
+.progress-bar { background: #f0f6ff !important; }
+.progress-fill { background: linear-gradient(90deg, #1a56db, #60a5fa) !important; }
+.progress-label { color: #1e293b !important; }
+
+/* SCORES TABLE */
+.scores-table th { color: #64748b !important; border-bottom: 1px solid #dce8ff !important; }
+.scores-table td { border-bottom: 1px solid #f0f6ff !important; color: #1e293b !important; }
+.badge.basic { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.badge.advanced { background: rgba(245,158,11,0.1) !important; color: #d97706 !important; }
+.badge.quick { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* TOAST */
+.toast { background: rgba(26,86,219,0.95) !important; box-shadow: 0 8px 24px rgba(26,86,219,0.3) !important; }
+
+/* LOADING */
+.loading { color: #64748b !important; }
+.empty { color: #94a3b8 !important; }
+.error-box { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.2) !important; color: #ef4444 !important; }
+
+/* RANK BADGES */
+.r1 { background: rgba(245,158,11,0.15) !important; color: #d97706 !important; }
+.r2 { background: rgba(148,163,184,0.15) !important; color: #64748b !important; }
+.r3 { background: rgba(180,83,9,0.15) !important; color: #b45309 !important; }
+.rn { background: rgba(100,116,139,0.1) !important; color: #64748b !important; }
+
+/* TOPIC CARDS */
+.topic-card { background: #ffffff !important; border: 2px solid #dce8ff !important; box-shadow: 0 2px 8px rgba(26,86,219,0.04) !important; }
+.topic-card:hover { border-color: #1a56db !important; box-shadow: 0 8px 24px rgba(26,86,219,0.12) !important; }
+.topic-card.sel-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.t-name { color: #1e293b !important; }
+.t-count { color: #64748b !important; }
+
+/* LEVEL TABS */
+.level-tab { background: #ffffff !important; border: 2px solid #dce8ff !important; color: #64748b !important; }
+.level-tab.active-basic { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.level-step { background: #ffffff !important; border: 2px solid #dce8ff !important; }
+.level-step.active { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.step-title { color: #1e293b !important; }
+.step-sub { color: #64748b !important; }
+.level-banner.basic { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.level-badge.basic { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+.level-desc { color: #64748b !important; }
+.level-desc strong { color: #1e293b !important; }
+
+/* QUIZ */
+.quiz-header { background: #ffffff !important; border-bottom: 1.5px solid #dce8ff !important; }
+.question-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.option-btn { background: #f8faff !important; border: 2px solid #dce8ff !important; color: #1e293b !important; }
+.option-btn:hover { border-color: #1a56db !important; background: rgba(26,86,219,0.04) !important; }
+.option-btn.selected { border-color: #1a56db !important; background: rgba(26,86,219,0.08) !important; color: #1a56db !important; }
+.option-btn.correct { border-color: #16a34a !important; background: rgba(22,163,74,0.08) !important; color: #16a34a !important; }
+.option-btn.wrong { border-color: #ef4444 !important; background: rgba(239,68,68,0.08) !important; color: #ef4444 !important; }
+
+/* START BUTTON */
+.btn-start { background: #1a56db !important; color: #ffffff !important; }
+.btn-start:hover:not(:disabled) { background: #1447c0 !important; box-shadow: 0 8px 25px rgba(26,86,219,0.3) !important; }
+.btn-start:disabled { background: #dce8ff !important; color: #94a3b8 !important; }
+
+/* TOOLBAR */
+.toolbar { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.lang-select, select { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.run-btn, #runBtn { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* COMPILER */
+.CodeMirror { background: #f8faff !important; color: #1e293b !important; }
+.output-area { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.output-area pre { color: #1e293b !important; }
+
+/* TIPS */
+.tip-card, .shortcut-card { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.tip-title, .shortcut-title { color: #1e293b !important; }
+.tip-text, .shortcut-text { color: #64748b !important; }
+.category-btn { background: #ffffff !important; border: 1.5px solid #dce8ff !important; color: #64748b !important; }
+.category-btn.active { background: rgba(26,86,219,0.1) !important; border-color: #1a56db !important; color: #1a56db !important; }
+
+/* RESUME */
+.resume-section { background: #ffffff !important; border: 1.5px solid #dce8ff !important; }
+.section-title { color: #1e293b !important; }
+.form-control, .form-input, input[type=text], input[type=email], textarea { background: #f8faff !important; border: 1.5px solid #dce8ff !important; color: #1e293b !important; }
+.form-control:focus, input:focus, textarea:focus { border-color: #1a56db !important; }
+.btn-primary { background: linear-gradient(135deg, #1a56db, #1447c0) !important; color: #fff !important; }
+
+/* AI WEAK AREA */
+.weak-area { background: rgba(239,68,68,0.06) !important; border: 1px solid rgba(239,68,68,0.15) !important; }
+.weak-area h4 { color: #ef4444 !important; }
+.strong-area { background: rgba(22,163,74,0.06) !important; border: 1px solid rgba(22,163,74,0.15) !important; }
+.strong-area h4 { color: #16a34a !important; }
+
+/* ADMIN LOGIN */
+#adminLoginScreen { background: #f0f6ff !important; }
+
+/* SCORE BARS */
+.step-status.done { background: rgba(22,163,74,0.1) !important; color: #16a34a !important; }
+.step-status.current { background: rgba(26,86,219,0.1) !important; color: #1a56db !important; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0f6ff; }
+::-webkit-scrollbar-thumb { background: #dce8ff; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #1a56db; }
+</style>
+
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <h2>🎓 PEC Portal</h2>
+    <p>Placement Preparation</p>
+  </div>
+  <a class="nav-item active" onclick="showPage('dashboard',this)">
+    <span class="nav-icon">🏠</span> Dashboard
+  </a>
+  <a class="nav-item" onclick="showPage('tasks',this)">
+    <span class="nav-icon">✅</span> My Tasks
+  </a>
+  <a class="nav-item" onclick="showPage('progress',this)">
+    <span class="nav-icon">📊</span> Progress
+  </a>
+  <a class="nav-item" onclick="showPage('ai',this)">
+    <span class="nav-icon">🤖</span> AI Weak Detector
+  </a>
+  <a class="nav-item" href="test.html">
+    <span class="nav-icon">📝</span> Take Test
+  </a>
+  <a class="nav-item" href="compiler.html">
+    <span class="nav-icon">💻</span> Code Compiler
+  </a>
+  <a class="nav-item" href="tips.html">
+    <span class="nav-icon">💡</span> Shortcut Tips
+  </a>
+  <a class="nav-item" href="resume.html">
+    <span class="nav-icon">📄</span> Resume Builder
+  </a>
+  <div class="sidebar-bottom">
+    <div style="padding:10px 12px;margin-bottom:8px;">
+      <button onclick="checkPendingTasksNotification()" style="width:100%;padding:9px;background:rgba(102,126,234,0.15);border:1px solid rgba(102,126,234,0.3);border-radius:10px;color:#a5b4fc;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">🔔 Check Pending Tasks</button>
+    </div>
+    <div class="student-info">
+      <div class="name" id="sidebarName">Loading...</div>
+      <div class="dept" id="sidebarDept">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-title">Welcome back, <span id="welcomeName">Student</span>! 👋</div>
+    <div class="page-sub">Here's your placement preparation overview</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="label">Total Tasks</div><div class="value" id="statTotal">—</div><div class="sub">assigned to you</div></div>
+      <div class="stat-card"><div class="label">Completed</div><div class="value" id="statDone" style="color:#50c878">—</div><div class="sub">tasks done</div></div>
+      <div class="stat-card"><div class="label">Tests Taken</div><div class="value" id="statTests" style="color:#a5b4fc">—</div><div class="sub">total attempts</div></div>
+      <div class="stat-card"><div class="label">Readiness</div><div class="value" id="statReady" style="color:#fbbf24">—%</div><div class="sub">placement ready</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📋 Recent Tasks</div></div>
+      <div id="recentTasks"><div class="loading">Loading tasks...</div></div>
+    </div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="page" id="page-tasks">
+    <div class="page-title">My Tasks ✅</div>
+    <div class="page-sub">Track your daily preparation activities</div>
+    <div class="card">
+      <div class="add-task-form">
+        <input type="text" id="taskInput" placeholder="Add a new task e.g. Practice 20 aptitude questions..."/>
+        <select id="taskTopic">
+          <option value="Aptitude">Aptitude</option>
+          <option value="Reasoning">Reasoning</option>
+          <option value="Verbal">Verbal</option>
+          <option value="Coding">Coding</option>
+          <option value="HR">HR Prep</option>
+          <option value="Resume">Resume</option>
+          <option value="General">General</option>
+        </select>
+        <button class="add-btn" onclick="addTask()">+ Add Task</button>
+      </div>
+      <div id="taskList"><div class="loading">Loading tasks...</div></div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="page" id="page-progress">
+    <div class="page-title">My Progress 📊</div>
+    <div class="page-sub">Track your performance across all topics</div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Task Completion by Topic</div></div>
+      <div id="progressBars"><div class="loading">Loading...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Test Score History</div></div>
+      <div id="scoreHistory"><div class="loading">Loading scores...</div></div>
+    </div>
+  </div>
+
+  <!-- AI -->
+  <div class="page" id="page-ai">
+    <div class="page-title">🤖 AI Weak Area Detector</div>
+    <div class="page-sub">AI analyses your scores and finds areas to improve</div>
+    <div class="card">
+      <button class="add-btn" style="margin-bottom:20px;" onclick="runAIAnalysis()">🔍 Analyse My Performance</button>
+      <div id="aiResult"><div class="empty">Click "Analyse" to get your personalised AI report</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = window.location.origin + '/api';
+const token = localStorage.getItem('pt_token');
+const student = JSON.parse(localStorage.getItem('pt_student')||'{}');
+
+if(!token){ window.location.href='index.html'; }
+
+document.getElementById('welcomeName').textContent = student.name||'Student';
+document.getElementById('sidebarName').textContent = student.name||'Student';
+document.getElementById('sidebarDept').textContent = (student.department||'IT')+' • Sem '+(student.semester||6);
+
+const headers = {'Content-Type':'application/json','Authorization':'Bearer '+token};
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  setTimeout(()=>t.style.display='none',2500);
+}
+
+function showPage(name, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  if(name==='dashboard') loadDashboard();
+  if(name==='tasks') loadTasks();
+  if(name==='progress') loadProgress();
+}
+
+function logout(){
+  localStorage.removeItem('pt_token');
+  localStorage.removeItem('pt_student');
+  window.location.href='index.html';
+}
+
+let allTasks=[];
+
+async function loadTasks(){
+  try{
+    const res=await fetch(API+'/tasks',{headers});
+    const data=await res.json();
+    if(data.success){allTasks=data.tasks;renderTasks();}
+  }catch(e){
+    document.getElementById('taskList').innerHTML='<div class="empty">⚠️ Could not load tasks. Is Flask running?</div>';
+  }
+}
+
+function renderTasks(){
+  const el=document.getElementById('taskList');
+  if(!allTasks.length){el.innerHTML='<div class="empty">No tasks yet. Add your first task above! 👆</div>';return;}
+  el.innerHTML=allTasks.map(t=>`
+    <div class="task-item">
+      <div class="task-check ${t.completed?'done':''}" onclick="toggleTask(${t.id},${!t.completed})">
+        ${t.completed?'✓':''}
+      </div>
+      <span class="task-text ${t.completed?'done':''}">${t.title}</span>
+      <span class="task-badge">${t.topic||'General'}</span>
+      <button class="del-btn" onclick="deleteTask(${t.id})">🗑</button>
+    </div>`).join('');
+}
+
+async function addTask(){
+  const title=document.getElementById('taskInput').value.trim();
+  const topic=document.getElementById('taskTopic').value;
+  if(!title){toast('⚠️ Please enter a task!');return;}
+  try{
+    const res=await fetch(API+'/tasks',{method:'POST',headers,body:JSON.stringify({title,topic})});
+    const data=await res.json();
+    if(data.success){document.getElementById('taskInput').value='';toast('✅ Task added!');loadTasks();}
+  }catch(e){toast('❌ Error adding task');}
+}
+
+async function toggleTask(id,completed){
+  try{
+    await fetch(API+'/tasks/'+id,{method:'PUT',headers,body:JSON.stringify({completed})});
+    toast(completed?'✅ Task completed!':'↩️ Marked incomplete');
+    loadTasks();
+  }catch(e){}
+}
+
+async function deleteTask(id){
+  if(!confirm('Delete this task?'))return;
+  try{
+    await fetch(API+'/tasks/'+id,{method:'DELETE',headers});
+    toast('🗑️ Task deleted!');
+    loadTasks();
+  }catch(e){}
+}
+
+async function loadDashboard(){
+  await loadTasks();
+  try{
+    const res=await fetch(API+'/scores',{headers});
+    const data=await res.json();
+    const scores=data.success?data.scores:[];
+    const total=allTasks.length;
+    const done=allTasks.filter(t=>t.completed).length;
+    const ready=total>0?Math.round((done/total)*100):0;
+    document.getElementById('statTotal').textContent=total;
+    document.getElementById('statDone').textContent=done;
+    document.getElementById('statTests').textContent=scores.reduce((a,s)=>a+(s.attempts||0),0);
+    document.getElementById('statReady').textContent=ready+'%';
+    const recent=allTasks.slice(0,5);
+    document.getElementById('recentTasks').innerHTML=recent.length
+      ?recent.map(t=>`<div class="task-item"><div class="task-check ${t.completed?'done':''}">${t.completed?'✓':''}</div><span class="task-text ${t.completed?'done':''}">${t.title}</span><span class="task-badge">${t.topic}</span></div>`).join('')
+      :'<div class="empty">No tasks yet. Go to My Tasks to add some!</div>';
+  }catch(e){}
+}
+
+async function loadProgress(){
+  await loadTasks();
+  const topics=['Aptitude','Reasoning','Verbal','Coding','HR','Resume','General'];
+  const bars=topics.map(topic=>{
+    const tt=allTasks.filter(t=>t.topic===topic);
+    if(!tt.length)return '';
+    const pct=Math.round((tt.filter(t=>t.completed).length/tt.length)*100);
+    return `<div class="progress-item">
+      <div class="progress-label"><span>${topic}</span><span>${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('progressBars').innerHTML=bars||'<div class="empty">Add tasks to see progress</div>';
+  try{
+    const res=await fetch(API+'/scores',{headers});
+    const data=await res.json();
+    if(data.success&&data.scores.length){
+      document.getElementById('scoreHistory').innerHTML=`
+        <table class="scores-table">
+          <tr><th>Topic</th><th>Level</th><th>Best Score</th><th>Attempts</th></tr>
+          ${data.scores.map(s=>`<tr>
+            <td>${s.topic}</td>
+            <td><span class="badge ${s.level}">${s.level}</span></td>
+            <td style="color:#50c878;font-weight:700">${s.best_score}/10</td>
+            <td>${s.attempts}</td>
+          </tr>`).join('')}
+        </table>`;
+    }else{
+      document.getElementById('scoreHistory').innerHTML='<div class="empty">No tests taken yet. Take a test to see scores!</div>';
+    }
+  }catch(e){}
+}
+
+async function runAIAnalysis(){
+  document.getElementById('aiResult').innerHTML='<div class="loading">🤖 Analysing your performance...</div>';
+  try{
+    const res=await fetch(API+'/scores',{headers});
+    const data=await res.json();
+    const scores=data.success?data.scores:[];
+    if(!scores.length){
+      document.getElementById('aiResult').innerHTML='<div class="empty">Take at least one test to get AI analysis!</div>';
+      return;
+    }
+    const weak=scores.filter(s=>s.best_score<5);
+    const mid=scores.filter(s=>s.best_score>=5&&s.best_score<7);
+    const strong=scores.filter(s=>s.best_score>=7);
+    let html='<h4 style="font-size:17px;margin-bottom:16px">🤖 Your AI Performance Report</h4>';
+    if(weak.length){
+      html+='<h4 style="color:#ff8080;margin-bottom:12px">⚠️ Weak Areas — Needs Improvement</h4>';
+      html+=weak.map(s=>`<div class="weak-area"><h4>📉 ${s.topic} (${s.level})</h4><p>Best score: ${s.best_score}/10 — Practice more! Try the shortcut tips.</p></div>`).join('');
+    }
+    if(mid.length){
+      html+='<h4 style="color:#fbbf24;margin-bottom:12px;margin-top:16px">🔄 Average Areas — Keep Improving</h4>';
+      html+=mid.map(s=>`<div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:16px;margin-bottom:10px;"><h4 style="color:#fbbf24;font-size:14px;margin-bottom:4px">📊 ${s.topic} (${s.level})</h4><p style="font-size:12px;color:rgba(255,255,255,0.5)">Best score: ${s.best_score}/10 — You're getting there!</p></div>`).join('');
+    }
+    if(strong.length){
+      html+='<h4 style="color:#50c878;margin-bottom:12px;margin-top:16px">✅ Strong Areas — Keep it up!</h4>';
+      html+=strong.map(s=>`<div class="strong-area"><h4>⭐ ${s.topic} (${s.level})</h4><p>Best score: ${s.best_score}/10 — Excellent! Maintain this.</p></div>`).join('');
+    }
+    document.getElementById('aiResult').innerHTML=html;
+  }catch(e){
+    document.getElementById('aiResult').innerHTML='<div class="empty">❌ Error loading analysis. Is Flask running?</div>';
+  }
+}
+
+document.addEventListener('keypress',e=>{if(e.key==='Enter')addTask();});
+
+// 🔔 Task Notifications
+function requestNotificationPermission(){
+  if('Notification' in window && Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
+}
+
+function checkPendingTasksNotification(){
+  const pending = allTasks.filter(t => !t.completed);
+  if(pending.length > 0){
+    if(Notification.permission === 'granted'){
+      new Notification('📋 PEC Placement Portal', {
+        body: `You have ${pending.length} pending task(s)! Keep going 💪`,
+        icon: '🎓'
+      });
+    }
+    // Also show in-app toast
+    toast(`🔔 You have ${pending.length} pending tasks!`);
+  } else if(allTasks.length > 0){
+    toast('🎉 All tasks completed! Great work!');
+  }
+}
+
+requestNotificationPermission();
+loadDashboard();
+</script>
+</body>
+</html>
