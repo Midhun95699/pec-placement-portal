@@ -44,6 +44,6 @@ def init_db():
         conn.commit()
         cursor.close()
         conn.close()
-        print("✅ Database initialized!")
+        print("✅ Database initialized successfully!")
     else:
         print("❌ Database connection failed!")
