@@ -21,24 +21,38 @@ def init_db():
     if conn:
         cursor = conn.cursor()
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE IF NOT EXISTS students (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
                 department VARCHAR(50) DEFAULT 'IT',
-                role VARCHAR(20) DEFAULT 'student',
+                semester INT DEFAULT 6,
+                roll_no VARCHAR(20) DEFAULT '',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS tasks (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT,
+                student_id INT,
                 title VARCHAR(200),
+                topic VARCHAR(100) DEFAULT 'General',
                 completed BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id)
+                FOREIGN KEY (student_id) REFERENCES students(id)
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS test_scores (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                student_id INT,
+                topic VARCHAR(100),
+                level VARCHAR(50) DEFAULT 'quick',
+                score INT DEFAULT 0,
+                total INT DEFAULT 10,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (student_id) REFERENCES students(id)
             )
         """)
         conn.commit()
