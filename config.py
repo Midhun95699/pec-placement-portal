@@ -1,14 +1,10 @@
-# config.py - All settings for your project
+import os
 
 class Config:
-    # MySQL Database settings
-    MYSQL_HOST = 'localhost'
-    MYSQL_USER = 'root'           # Your MySQL username
-    MYSQL_PASSWORD = 'Midhun@09'           
-    MYSQL_DATABASE = 'pec_placement'
-    
-    # Secret key for JWT tokens (login sessions)
-    JWT_SECRET_KEY = 'pec_placement_secret_key_2024'
-    
-    # Flask settings
-    DEBUG = True
+    MYSQL_HOST = os.environ.get('DB_HOST', 'localhost')
+    MYSQL_USER = os.environ.get('DB_USER', 'root')
+    MYSQL_PASSWORD = os.environ.get('DB_PASSWORD', '')
+    MYSQL_DATABASE = os.environ.get('DB_NAME', 'pec_placement')
+    MYSQL_PORT = int(os.environ.get('DB_PORT', 3306))
+    JWT_SECRET_KEY = os.environ.get('SECRET_KEY', 'pec_placement_secret_2024')
+    DEBUG = False
