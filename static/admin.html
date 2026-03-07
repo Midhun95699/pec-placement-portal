@@ -1,130 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PEC Placement — Admin Panel</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'DM Sans',sans-serif;background:#050F1A;color:#E8F4F2;min-height:100vh;}
-    .topbar{background:#0A1929;border-bottom:1px solid #1A3A55;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;}
-    .brand{font-family:'Space Mono',monospace;font-size:18px;color:#02C5A0;display:flex;align-items:center;gap:10px;}
-    .admin-badge{padding:4px 12px;background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:20px;font-size:12px;color:#FF6B6B;font-weight:700;}
-    .topbar-right{display:flex;align-items:center;gap:12px;}
-    .btn-refresh{padding:9px 20px;background:rgba(2,197,160,.15);color:#02C5A0;border:1.5px solid rgba(2,197,160,.3);border-radius:9px;cursor:pointer;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;transition:.2s;}
-    .btn-refresh:hover{background:rgba(2,197,160,.25);}
-    .btn-logout{padding:9px 20px;background:transparent;color:#7A9BAE;border:1px solid #1A3A55;border-radius:9px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:.2s;}
-    .btn-logout:hover{border-color:#FF6B6B;color:#FF6B6B;}
-    .main{padding:32px;}
-    .page-title{font-size:24px;font-weight:700;margin-bottom:4px;}
-    .page-sub{font-size:13px;color:#7A9BAE;margin-bottom:28px;}
-    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
-    .stat-card{background:#0D2137;border:1px solid #1A3A55;border-radius:14px;padding:22px;position:relative;overflow:hidden;}
-    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-    .sc1::before{background:#02C5A0}.sc2::before{background:#FFD166}.sc3::before{background:#A855F7}.sc4::before{background:#22C55E}
-    .stat-icon{font-size:28px;margin-bottom:10px;}
-    .stat-val{font-size:36px;font-weight:700;font-family:'Space Mono',monospace;margin-bottom:4px;}
-    .stat-lbl{font-size:13px;color:#7A9BAE;}
-    .card{background:#0D2137;border:1px solid #1A3A55;border-radius:16px;padding:24px;margin-bottom:20px;}
-    .card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
-    .search-bar{width:100%;padding:11px 16px;background:#0A1929;border:1.5px solid #1A3A55;border-radius:10px;color:#E8F4F2;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px;transition:.2s;}
-    .search-bar:focus{border-color:#02C5A0;}
-    .search-bar::placeholder{color:#7A9BAE;}
-    table{width:100%;border-collapse:collapse;}
-    th{text-align:left;padding:12px 16px;font-size:11px;color:#7A9BAE;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #1A3A55;font-weight:600;}
-    td{padding:14px 16px;font-size:14px;border-bottom:1px solid rgba(26,58,85,.5);}
-    tr:last-child td{border-bottom:none;}
-    tr:hover td{background:rgba(2,197,160,.03);}
-    .badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
-    .badge-it{background:rgba(2,197,160,.15);color:#02C5A0;}
-    .badge-cse{background:rgba(168,85,247,.15);color:#A855F7;}
-    .badge-ece{background:rgba(255,159,67,.15);color:#FF9F43;}
-    .badge-eee{background:rgba(255,209,102,.15);color:#FFD166;}
-    .badge-mech{background:rgba(255,107,107,.15);color:#FF6B6B;}
-    .badge-civil{background:rgba(34,197,94,.15);color:#22C55E;}
-    .progress-mini{height:6px;background:#1A3A55;border-radius:3px;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;}
-    .progress-fill{height:100%;background:#02C5A0;border-radius:3px;transition:width .5s;}
-    .loading{text-align:center;padding:48px;color:#7A9BAE;font-size:14px;}
-    .loading-spin{font-size:32px;animation:spin 1s linear infinite;display:block;margin-bottom:12px;}
-    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-    .empty{text-align:center;padding:48px;color:#7A9BAE;}
-    .empty-icon{font-size:48px;margin-bottom:12px;}
-    .error-box{background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);border-radius:12px;padding:20px;text-align:center;color:#FF6B6B;}
-    .rank-badge{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
-    .r1{background:rgba(255,183,0,.2);color:#FFB800;}
-    .r2{background:rgba(192,192,192,.2);color:#C0C0C0;}
-    .r3{background:rgba(205,127,50,.2);color:#CD7F32;}
-    .rn{background:rgba(122,155,174,.1);color:#7A9BAE;}
-    .dept-filter{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-    .dept-btn{padding:6px 14px;border-radius:20px;border:1px solid #1A3A55;background:transparent;color:#7A9BAE;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;transition:.2s;}
-    .dept-btn:hover{border-color:#02C5A0;color:#02C5A0;}
-    .dept-btn.active{background:rgba(2,197,160,.15);border-color:#02C5A0;color:#02C5A0;}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PEC Placement — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:#f0f6ff;color:#1e293b;min-height:100vh;}
+
+/* LOGIN SCREEN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e8f0fe,#f0f6ff,#dce8ff);}
+.login-card{background:#fff;border:1.5px solid #dce8ff;border-radius:24px;padding:40px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(26,86,219,0.12);}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo img{height:65px;margin-bottom:10px;}
+.login-logo h1{color:#1e293b;font-size:22px;font-weight:700;}
+.login-logo p{color:#64748b;font-size:13px;margin-top:4px;}
+.admin-badge{display:inline-block;padding:4px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:20px;font-size:11px;color:#ef4444;font-weight:700;margin-top:6px;}
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;color:#1e293b;font-size:13px;font-weight:600;margin-bottom:6px;}
+.form-group input{width:100%;padding:12px 16px;background:#f8faff;border:1.5px solid #bfdbfe;border-radius:10px;color:#1e293b;font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:.2s;}
+.form-group input:focus{border-color:#1a56db;background:#eff6ff;}
+.form-group input::placeholder{color:#94a3b8;}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,#1a56db,#1447c0);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;font-family:'Outfit',sans-serif;}
+.login-btn:hover{opacity:.9;}
+.login-btn:disabled{opacity:.6;cursor:not-allowed;}
+.msg{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none;}
+.msg.error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;}
+.msg.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;}
+
+/* ADMIN DASHBOARD */
+#adminDash{display:none;}
+.topbar{background:#fff;border-bottom:1.5px solid #dce8ff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(26,86,219,0.06);}
+.brand{font-size:17px;font-weight:700;color:#1a56db;display:flex;align-items:center;gap:8px;}
+.brand img{height:32px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.btn-refresh{padding:9px 18px;background:rgba(26,86,219,0.08);color:#1a56db;border:1.5px solid rgba(26,86,219,0.2);border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;transition:.2s;}
+.btn-refresh:hover{background:rgba(26,86,219,0.15);}
+.btn-logout{padding:9px 18px;background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;}
+.main{padding:28px;}
+.page-title{font-size:22px;font-weight:700;color:#1e293b;margin-bottom:4px;}
+.page-sub{font-size:13px;color:#64748b;margin-bottom:24px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-card{background:#fff;border:1.5px solid #dce8ff;border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(26,86,219,0.05);}
+.stat-icon{font-size:26px;margin-bottom:8px;}
+.stat-val{font-size:32px;font-weight:700;color:#1a56db;margin-bottom:4px;}
+.stat-lbl{font-size:12px;color:#64748b;}
+.card{background:#fff;border:1.5px solid #dce8ff;border-radius:16px;padding:22px;margin-bottom:20px;box-shadow:0 2px 8px rgba(26,86,219,0.05);}
+.card-title{font-size:15px;font-weight:700;color:#1e293b;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.search-bar{width:100%;padding:11px 16px;background:#f8faff;border:1.5px solid #bfdbfe;border-radius:10px;color:#1e293b;font-size:14px;font-family:'Outfit',sans-serif;outline:none;margin-bottom:14px;}
+.search-bar:focus{border-color:#1a56db;}
+.search-bar::placeholder{color:#94a3b8;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:11px 14px;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid #dce8ff;font-weight:600;background:#f8faff;}
+td{padding:13px 14px;font-size:13px;border-bottom:1px solid #f0f6ff;color:#1e293b;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f8faff;}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-it{background:rgba(26,86,219,0.1);color:#1a56db;}
+.badge-cse{background:rgba(124,58,237,0.1);color:#7c3aed;}
+.badge-ece{background:rgba(234,88,12,0.1);color:#ea580c;}
+.badge-eee{background:rgba(202,138,4,0.1);color:#ca8a04;}
+.badge-mech{background:rgba(239,68,68,0.1);color:#ef4444;}
+.badge-civil{background:rgba(22,163,74,0.1);color:#16a34a;}
+.progress-mini{height:6px;background:#dce8ff;border-radius:3px;overflow:hidden;width:70px;display:inline-block;vertical-align:middle;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#1a56db,#60a5fa);border-radius:3px;}
+.loading{text-align:center;padding:48px;color:#64748b;font-size:14px;}
+.empty{text-align:center;padding:48px;color:#64748b;}
+.dept-filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.dept-btn{padding:5px 14px;border-radius:20px;border:1.5px solid #dce8ff;background:#fff;color:#64748b;cursor:pointer;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;}
+.dept-btn.active{background:rgba(26,86,219,0.1);border-color:#1a56db;color:#1a56db;}
+.rank-badge{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.r1{background:rgba(234,179,8,0.15);color:#ca8a04;}
+.r2{background:rgba(148,163,184,0.2);color:#475569;}
+.r3{background:rgba(180,83,9,0.15);color:#b45309;}
+.rn{background:#f0f6ff;color:#64748b;}
+</style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="brand">🎯 PEC Placement Portal <span class="admin-badge">👨‍💼 ADMIN</span></div>
-  <div class="topbar-right">
-    <button class="btn-refresh" onclick="loadStudents()">🔄 Refresh Data</button>
-    <button class="btn-logout" onclick="logout()">Logout</button>
+<!-- LOGIN SCREEN -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="pec_logo.png" alt="PEC" onerror="this.style.display='none'"/>
+      <h1>PEC Placement Portal</h1>
+      <p>Admin Access Only</p>
+      <span class="admin-badge">👨‍💼 ADMIN PANEL</span>
+    </div>
+    <div id="loginMsg" class="msg"></div>
+    <div class="form-group">
+      <label>Admin Username</label>
+      <input type="text" id="adminUser" placeholder="Enter admin username"/>
+    </div>
+    <div class="form-group">
+      <label>Admin Password</label>
+      <input type="password" id="adminPass" placeholder="Enter admin password"/>
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="adminLogin()">Login to Admin Panel</button>
   </div>
 </div>
 
-<div class="main">
-  <div class="page-title">📊 Admin Dashboard</div>
-  <div class="page-sub">Monitor all students' placement preparation — Panimalar Engineering College</div>
-
-  <!-- STATS -->
-  <div class="stats-row">
-    <div class="stat-card sc1"><div class="stat-icon">👥</div><div class="stat-val" id="totalStudents">—</div><div class="stat-lbl">Total Students</div></div>
-    <div class="stat-card sc2"><div class="stat-icon">✅</div><div class="stat-val" id="totalTasks">—</div><div class="stat-lbl">Total Tasks Created</div></div>
-    <div class="stat-card sc3"><div class="stat-icon">🎯</div><div class="stat-val" id="totalTests">—</div><div class="stat-lbl">Tests Taken</div></div>
-    <div class="stat-card sc4"><div class="stat-icon">📈</div><div class="stat-val" id="avgProgress">—</div><div class="stat-lbl">Avg Completion %</div></div>
+<!-- ADMIN DASHBOARD -->
+<div id="adminDash">
+  <div class="topbar">
+    <div class="brand">
+      <img src="pec_logo.png" onerror="this.style.display='none'"/>
+      PEC Placement Portal
+      <span style="padding:3px 10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:20px;font-size:11px;color:#ef4444;font-weight:700;">ADMIN</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-refresh" onclick="loadStudents()">🔄 Refresh</button>
+      <button class="btn-logout" onclick="adminLogout()">🚪 Logout</button>
+    </div>
   </div>
 
-  <!-- STUDENT TABLE -->
-  <div class="card">
-    <div class="card-title">
-      <span>👥 All Registered Students</span>
-      <span id="studentCount" style="font-size:13px;color:#7A9BAE;font-weight:400">Loading...</span>
+  <div class="main">
+    <div class="page-title">📊 Admin Dashboard</div>
+    <div class="page-sub">Monitor all students' placement preparation — Panimalar Engineering College</div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val" id="totalStudents">—</div><div class="stat-lbl">Total Students</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val" id="totalTasks">—</div><div class="stat-lbl">Total Tasks</div></div>
+      <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-val" id="totalTests">—</div><div class="stat-lbl">Tests Taken</div></div>
+      <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-val" id="avgProgress">—</div><div class="stat-lbl">Avg Progress</div></div>
     </div>
 
-    <!-- FILTERS -->
-    <input class="search-bar" id="searchInput" placeholder="🔍 Search by name, email or roll number..." oninput="filterStudents()"/>
-    <div class="dept-filter" id="deptFilter">
-      <button class="dept-btn active" onclick="filterDept('All',this)">All</button>
-      <button class="dept-btn" onclick="filterDept('IT',this)">IT</button>
-      <button class="dept-btn" onclick="filterDept('CSE',this)">CSE</button>
-      <button class="dept-btn" onclick="filterDept('ECE',this)">ECE</button>
-      <button class="dept-btn" onclick="filterDept('EEE',this)">EEE</button>
-      <button class="dept-btn" onclick="filterDept('MECH',this)">MECH</button>
-      <button class="dept-btn" onclick="filterDept('CIVIL',this)">CIVIL</button>
-    </div>
-
-    <div id="tableWrap">
-      <div class="loading"><span class="loading-spin">⚙️</span>Loading students...</div>
+    <div class="card">
+      <div class="card-title">
+        <span>👥 All Registered Students</span>
+        <span id="studentCount" style="font-size:13px;color:#64748b;font-weight:400;">Loading...</span>
+      </div>
+      <input class="search-bar" id="searchInput" placeholder="🔍 Search by name, email or roll number..." oninput="filterStudents()"/>
+      <div class="dept-filter">
+        <button class="dept-btn active" onclick="filterDept('All',this)">All</button>
+        <button class="dept-btn" onclick="filterDept('IT',this)">IT</button>
+        <button class="dept-btn" onclick="filterDept('CSE',this)">CSE</button>
+        <button class="dept-btn" onclick="filterDept('ECE',this)">ECE</button>
+        <button class="dept-btn" onclick="filterDept('EEE',this)">EEE</button>
+        <button class="dept-btn" onclick="filterDept('MECH',this)">MECH</button>
+        <button class="dept-btn" onclick="filterDept('CIVIL',this)">CIVIL</button>
+      </div>
+      <div id="tableWrap"><div class="loading">⚙️ Loading students...</div></div>
     </div>
   </div>
 </div>
 
 <script>
+// ── ADMIN CREDENTIALS ──
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'pec@2024';
+
 let allStudents = [];
 let currentDept = 'All';
 
+function showLoginMsg(text, type){
+  const el = document.getElementById('loginMsg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  el.style.display = 'block';
+}
+
+function adminLogin(){
+  const user = document.getElementById('adminUser').value.trim();
+  const pass = document.getElementById('adminPass').value.trim();
+  if(!user || !pass){ showLoginMsg('Please enter username and password!', 'error'); return; }
+  if(user === ADMIN_USER && pass === ADMIN_PASS){
+    sessionStorage.setItem('admin_logged', 'yes');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminDash').style.display = 'block';
+    loadStudents();
+  } else {
+    showLoginMsg('Wrong username or password!', 'error');
+  }
+}
+
+function adminLogout(){
+  sessionStorage.removeItem('admin_logged');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminDash').style.display = 'none';
+  document.getElementById('adminUser').value = '';
+  document.getElementById('adminPass').value = '';
+}
+
 async function loadStudents(){
-  document.getElementById('tableWrap').innerHTML='<div class="loading"><span class="loading-spin">⚙️</span>Loading students...</div>';
+  document.getElementById('tableWrap').innerHTML = '<div class="loading">⚙️ Loading students...</div>';
   try{
     const res = await fetch('/api/admin/students');
     const data = await res.json();
     if(data.success){
       allStudents = data.students;
-
-      // Update stats
       document.getElementById('totalStudents').textContent = data.total;
       document.getElementById('studentCount').textContent = data.total + ' students found';
-
       let totalTasks=0, totalTests=0, totalPct=0;
       data.students.forEach(s=>{
         totalTasks += s.total_tasks||0;
@@ -136,66 +203,49 @@ async function loadStudents(){
       document.getElementById('totalTasks').textContent = totalTasks;
       document.getElementById('totalTests').textContent = totalTests;
       document.getElementById('avgProgress').textContent = data.total>0 ? Math.round(totalPct/data.total)+'%' : '0%';
-
       renderTable(allStudents);
     }
   } catch(err){
-    document.getElementById('tableWrap').innerHTML=`
-      <div class="error-box">
-        <div style="font-size:32px;margin-bottom:10px">❌</div>
-        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Cannot connect to server!</div>
-        <div style="font-size:13px">Make sure Flask is running: <strong>python app.py</strong></div>
-      </div>`;
+    document.getElementById('tableWrap').innerHTML = '<div class="empty">❌ Cannot connect to server!</div>';
   }
 }
 
 function renderTable(students){
   if(students.length===0){
-    document.getElementById('tableWrap').innerHTML=`<div class="empty"><div class="empty-icon">👥</div><div>No students found!</div></div>`;
+    document.getElementById('tableWrap').innerHTML = '<div class="empty">👥 No students found!</div>';
     return;
   }
   const deptColors = {IT:'badge-it',CSE:'badge-cse',ECE:'badge-ece',EEE:'badge-eee',MECH:'badge-mech',CIVIL:'badge-civil'};
-  let html=`<table>
-    <tr>
-      <th>#</th>
-      <th>Name</th>
-      <th>Roll No</th>
-      <th>Email</th>
-      <th>Dept</th>
-      <th>Sem</th>
-      <th>Tasks</th>
-      <th>Tests</th>
-      <th>Progress</th>
-      <th>Joined</th>
-    </tr>`;
+  let html = `<table>
+    <tr><th>#</th><th>Name</th><th>Roll No</th><th>Email</th><th>Dept</th><th>Sem</th><th>Tasks</th><th>Tests</th><th>Progress</th><th>Joined</th></tr>`;
   students.forEach((s,i)=>{
     const done = s.completed_tasks||0;
     const total = s.total_tasks||0;
-    const pct = total>0?Math.round(done/total*100):0;
-    const col = pct>=70?'#22C55E':pct>=40?'#FFD166':'#7A9BAE';
+    const pct = total>0 ? Math.round(done/total*100) : 0;
+    const col = pct>=70?'#16a34a':pct>=40?'#ca8a04':'#64748b';
     const rankClass = i===0?'r1':i===1?'r2':i===2?'r3':'rn';
     const deptClass = deptColors[s.department]||'badge-it';
     const joined = s.created_at ? new Date(s.created_at).toLocaleDateString('en-IN') : '—';
-    html+=`<tr>
+    html += `<tr>
       <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
-      <td style="font-weight:600">${s.name}</td>
-      <td style="color:#7A9BAE;font-family:monospace">${s.roll_no||'—'}</td>
-      <td style="color:#7A9BAE;font-size:13px">${s.email}</td>
+      <td style="font-weight:600;">${s.name}</td>
+      <td style="color:#64748b;font-family:monospace;">${s.roll_no||'—'}</td>
+      <td style="color:#64748b;font-size:12px;">${s.email}</td>
       <td><span class="badge ${deptClass}">${s.department||'IT'}</span></td>
-      <td style="text-align:center">Sem ${s.semester||6}</td>
-      <td style="color:#02C5A0;font-weight:700">${done}/${total}</td>
-      <td style="color:#A855F7;font-weight:700">${s.tests_taken||0}</td>
+      <td style="text-align:center;">Sem ${s.semester||6}</td>
+      <td style="color:#1a56db;font-weight:700;">${done}/${total}</td>
+      <td style="color:#7c3aed;font-weight:700;">${s.tests_taken||0}</td>
       <td>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="progress-mini"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div>
-          <span style="font-size:12px;color:${col};font-weight:700">${pct}%</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="progress-mini"><div class="progress-fill" style="width:${pct}%;"></div></div>
+          <span style="font-size:12px;color:${col};font-weight:700;">${pct}%</span>
         </div>
       </td>
-      <td style="font-size:12px;color:#7A9BAE">${joined}</td>
+      <td style="font-size:12px;color:#64748b;">${joined}</td>
     </tr>`;
   });
-  html+='</table>';
-  document.getElementById('tableWrap').innerHTML=html;
+  html += '</table>';
+  document.getElementById('tableWrap').innerHTML = html;
 }
 
 function filterStudents(){
@@ -205,7 +255,7 @@ function filterStudents(){
     s.email.toLowerCase().includes(q)||
     (s.roll_no&&s.roll_no.toLowerCase().includes(q))
   );
-  if(currentDept!=='All') filtered=filtered.filter(s=>s.department===currentDept);
+  if(currentDept!=='All') filtered = filtered.filter(s=>s.department===currentDept);
   renderTable(filtered);
 }
 
@@ -216,13 +266,22 @@ function filterDept(dept, el){
   filterStudents();
 }
 
-function logout(){
-  localStorage.clear();
-  window.location.href='index.html';
+// Auto refresh every 30 seconds
+setInterval(()=>{
+  if(sessionStorage.getItem('admin_logged')==='yes') loadStudents();
+}, 30000);
+
+// Check if already logged in
+if(sessionStorage.getItem('admin_logged')==='yes'){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('adminDash').style.display='block';
+  loadStudents();
 }
 
-// Load on start
-loadStudents();
+// Enter key support
+document.addEventListener('keypress', e=>{
+  if(e.key==='Enter') adminLogin();
+});
 </script>
 </body>
 </html>

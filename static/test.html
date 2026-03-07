@@ -89,7 +89,7 @@
 
     /* START BUTTON */
     .btn-start { display: block; width: 100%; padding: 16px; background: var(--teal); color: var(--navy); border: none; border-radius: 12px; font-size: 17px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; margin-bottom: 28px; }
-    .btn-start:hover:not(:disabled) { background: #03E5B8; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(2,197,160,0.35); }
+    .btn-start:hover:not(:disabled) { background: #f0f6ff; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(2,197,160,0.35); }
     .btn-start:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
     .btn-start.adv { background: var(--purple); color: white; }
     .btn-start.adv:hover:not(:disabled) { background: #bf7fff; box-shadow: 0 8px 25px rgba(168,85,247,0.35); }
@@ -130,7 +130,7 @@
     .btn-prev { background: var(--border); color: var(--text); }
     .btn-prev:hover { background: #2A4A65; }
     .btn-next { background: var(--teal); color: var(--navy); }
-    .btn-next:hover { background: #03E5B8; }
+    .btn-next:hover { background: #f0f6ff; }
     .btn-next.adv { background: var(--purple); color: white; }
     .btn-next.adv:hover { background: #bf7fff; }
     .btn-submit { background: var(--accent); color: var(--navy); }
@@ -157,7 +157,7 @@
     .btn-unlock:hover { background: #bf7fff; }
     .result-actions { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
     .btn-retry { padding: 14px 32px; background: var(--teal); color: var(--navy); border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: 0.2s; }
-    .btn-retry:hover { background: #03E5B8; }
+    .btn-retry:hover { background: #f0f6ff; }
     .btn-back { padding: 14px 32px; background: var(--border); color: var(--text); border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: 0.2s; }
     .btn-back:hover { background: #2A4A65; }
     .review-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
@@ -345,14 +345,14 @@
 const TOPICS = ['Aptitude','Coding','Verbal','DBMS','OS'];
 
 // Auth
-const currentEmail = localStorage.getItem('pt_current');
-if (!currentEmail) window.location.href = 'index.html';
+const studentData = JSON.parse(localStorage.getItem('pt_student') || '{}'); const currentEmail = studentData.email || '';
+if (!localStorage.getItem('pt_token')) window.location.href = 'index.html';
 const users = JSON.parse(localStorage.getItem('pt_users') || '{}');
 const user = users[currentEmail] || { name: 'Student' };
 const firstName = user.name.split(' ')[0];
 document.getElementById('sidebarName').textContent = firstName;
 document.getElementById('avatarInitial').textContent = firstName[0].toUpperCase();
-function logout() { localStorage.removeItem('pt_current'); window.location.href = 'index.html'; }
+function logout() { localStorage.removeItem('pt_token'); localStorage.removeItem('pt_student'); window.location.href = 'index.html'; }
 
 // ── SCORES ──
 function getScores() { return JSON.parse(localStorage.getItem('pt_lvl_' + currentEmail) || '{}'); }
