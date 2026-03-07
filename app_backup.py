@@ -245,12 +245,10 @@ def get_all_students():
     except Exception as e:
         return jsonify({'success':False,'message':str(e)}), 500
 
-# ── INIT DB ON STARTUP (runs with gunicorn too) ──
-print("🚀 PEC Placement Portal Backend Starting...")
-init_db()
-
 # ── START SERVER ──
 if __name__ == '__main__':
+    print("🚀 PEC Placement Portal Backend Starting...")
+    init_db()
     print("🌐 Server running at: http://localhost:5000")
     print("👨‍💼 Admin Panel at: http://localhost:5000/admin.html")
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)

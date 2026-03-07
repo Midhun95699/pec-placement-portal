@@ -20,8 +20,11 @@ def init_db():
     conn = get_db()
     if conn:
         cursor = conn.cursor()
+        cursor.execute("DROP TABLE IF EXISTS test_scores")
+        cursor.execute("DROP TABLE IF EXISTS tasks")
+        cursor.execute("DROP TABLE IF EXISTS students")
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS students (
+            CREATE TABLE students (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
@@ -33,7 +36,7 @@ def init_db():
             )
         """)
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS tasks (
+            CREATE TABLE tasks (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 student_id INT,
                 title VARCHAR(200),
@@ -44,7 +47,7 @@ def init_db():
             )
         """)
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS test_scores (
+            CREATE TABLE test_scores (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 student_id INT,
                 topic VARCHAR(100),
