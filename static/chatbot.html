@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Chatbot - PEC Placement Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --sidebar: #0d1426;
+    --card: #111827;
+    --border: #1e2d4a;
+    --accent: #f59e0b;
+    --accent2: #3b82f6;
+    --text: #e2e8f0;
+    --muted: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { width: 240px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 24px 0; position: fixed; height: 100vh; overflow-y: auto; z-index: 100; }
+  .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .sidebar-logo h2 { font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; color: var(--accent); }
+  .sidebar-logo p { font-size: 0.7rem; color: var(--muted); }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: all 0.2s; border-left: 3px solid transparent; }
+  .nav-item:hover, .nav-item.active { color: var(--text); background: rgba(245,158,11,0.08); border-left-color: var(--accent); }
+  .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+  /* MAIN */
+  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; height: 100vh; }
+  .topbar { padding: 16px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--sidebar); }
+  .topbar h1 { font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; color: var(--accent); }
+  .status-badge { background: rgba(34,197,94,0.15); color: #22c55e; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; border: 1px solid rgba(34,197,94,0.3); }
+
+  /* CHAT AREA */
+  .chat-container { flex: 1; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column; gap: 16px; }
+  .welcome-msg { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(59,130,246,0.1)); border: 1px solid rgba(245,158,11,0.2); border-radius: 12px; padding: 20px; margin-bottom: 8px; }
+  .welcome-msg h3 { font-family: 'Rajdhani', sans-serif; color: var(--accent); font-size: 1.1rem; margin-bottom: 6px; }
+  .welcome-msg p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+  .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .suggestion-chip { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
+  .suggestion-chip:hover { background: rgba(59,130,246,0.3); }
+
+  .message { display: flex; gap: 12px; max-width: 80%; }
+  .message.user { align-self: flex-end; flex-direction: row-reverse; }
+  .message.bot { align-self: flex-start; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .avatar.bot-av { background: linear-gradient(135deg, var(--accent), #f97316); }
+  .avatar.user-av { background: linear-gradient(135deg, var(--accent2), #6366f1); }
+  .bubble { padding: 12px 16px; border-radius: 12px; font-size: 0.88rem; line-height: 1.6; }
+  .message.bot .bubble { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 4px 12px 12px 12px; }
+  .message.user .bubble { background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: white; border-radius: 12px 4px 12px 12px; }
+  .typing { display: flex; align-items: center; gap: 4px; padding: 12px 16px; }
+  .typing span { width: 8px; height: 8px; background: var(--muted); border-radius: 50%; animation: bounce 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  /* INPUT */
+  .input-area { padding: 16px 28px; border-top: 1px solid var(--border); background: var(--sidebar); display: flex; gap: 12px; align-items: flex-end; }
+  .input-area textarea { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.88rem; resize: none; outline: none; max-height: 120px; transition: border-color 0.2s; }
+  .input-area textarea:focus { border-color: var(--accent); }
+  .send-btn { background: linear-gradient(135deg, var(--accent), #f97316); border: none; border-radius: 10px; width: 46px; height: 46px; cursor: pointer; font-size: 1.1rem; transition: all 0.2s; flex-shrink: 0; }
+  .send-btn:hover { transform: scale(1.05); }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <h2>⚡ PEC Portal</h2>
+    <p>Placement Preparation</p>
+  </div>
+  <a href="/dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+  <a href="/test.html" class="nav-item"><span class="icon">📝</span> Take Test</a>
+  <a href="/compiler.html" class="nav-item"><span class="icon">💻</span> Compiler</a>
+  <a href="/tips.html" class="nav-item"><span class="icon">💡</span> Tips</a>
+  <a href="/resume.html" class="nav-item"><span class="icon">📄</span> Resume</a>
+  <a href="/leaderboard.html" class="nav-item"><span class="icon">🏆</span> Leaderboard</a>
+  <a href="/chatbot.html" class="nav-item active"><span class="icon">🤖</span> AI Chatbot</a>
+  <a href="/companies.html" class="nav-item"><span class="icon">🏢</span> Company Q&A</a>
+  <a href="/index.html" class="nav-item" style="margin-top:auto"><span class="icon">🚪</span> Logout</a>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <h1>🤖 AI Placement Assistant</h1>
+    <span class="status-badge">● Online</span>
+  </div>
+
+  <div class="chat-container" id="chatContainer">
+    <div class="welcome-msg">
+      <h3>👋 Hello! I'm your AI Placement Assistant</h3>
+      <p>Ask me anything about placements — aptitude, coding, HR questions, resume tips, or company-specific prep. I'm here to help you crack your dream job!</p>
+      <div class="suggestions">
+        <span class="suggestion-chip" onclick="sendSuggestion(this.textContent)">How to prepare for TCS?</span>
+        <span class="suggestion-chip" onclick="sendSuggestion(this.textContent)">Common HR questions</span>
+        <span class="suggestion-chip" onclick="sendSuggestion(this.textContent)">Tips for aptitude test</span>
+        <span class="suggestion-chip" onclick="sendSuggestion(this.textContent)">How to write a good resume?</span>
+        <span class="suggestion-chip" onclick="sendSuggestion(this.textContent)">Explain OOP concepts</span>
+        <span class="suggestion-chip" onclick="sendSuggestion(this.textContent)">What is DBMS normalization?</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <textarea id="userInput" placeholder="Ask anything about placements, coding, HR, aptitude..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+const chatContainer = document.getElementById('chatContainer');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+let conversationHistory = [];
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function addMessage(role, text) {
+  const div = document.createElement('div');
+  div.className = `message ${role === 'user' ? 'user' : 'bot'}`;
+  const avatar = role === 'user' ? '<div class="avatar user-av">👤</div>' : '<div class="avatar bot-av">🤖</div>';
+  div.innerHTML = `${avatar}<div class="bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  chatContainer.appendChild(div);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+  return div;
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'message bot';
+  div.id = 'typingIndicator';
+  div.innerHTML = '<div class="avatar bot-av">🤖</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+  chatContainer.appendChild(div);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typingIndicator');
+  if (t) t.remove();
+}
+
+function sendSuggestion(text) {
+  userInput.value = text;
+  sendMessage();
+}
+
+async function sendMessage() {
+  const text = userInput.value.trim();
+  if (!text) return;
+  userInput.value = '';
+  userInput.style.height = 'auto';
+  sendBtn.disabled = true;
+
+  addMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+  showTyping();
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are an expert AI placement assistant for Panimalar Engineering College (PEC). 
+Help students with: placement preparation, aptitude (quantitative, logical, verbal), 
+coding interview questions (C, C++, Java, Python, DSA), HR interview answers, 
+resume tips, company-specific prep (TCS, Infosys, Wipro, Cognizant, Accenture, etc.), 
+DBMS, OS, CN concepts, and soft skills.
+Keep answers concise, practical, and encouraging. Use bullet points when listing steps or tips.
+Always be positive and motivating.`,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content[0].text;
+    conversationHistory.push({ role: 'assistant', content: reply });
+    removeTyping();
+    addMessage('bot', reply);
+  } catch (err) {
+    removeTyping();
+    addMessage('bot', '⚠️ Connection error. Please check your internet and try again.');
+  }
+
+  sendBtn.disabled = false;
+}
+</script>
+</body>
+</html>

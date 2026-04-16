@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Q&A - PEC Placement Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e; --sidebar: #0d1426; --card: #111827;
+    --border: #1e2d4a; --accent: #f59e0b; --accent2: #3b82f6;
+    --text: #e2e8f0; --muted: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 24px 0; position: fixed; height: 100vh; overflow-y: auto; }
+  .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .sidebar-logo h2 { font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; color: var(--accent); }
+  .sidebar-logo p { font-size: 0.7rem; color: var(--muted); }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: all 0.2s; border-left: 3px solid transparent; }
+  .nav-item:hover, .nav-item.active { color: var(--text); background: rgba(245,158,11,0.08); border-left-color: var(--accent); }
+  .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+  .main { margin-left: 240px; flex: 1; padding: 28px; }
+  .topbar { margin-bottom: 28px; }
+  .topbar h1 { font-family: 'Rajdhani', sans-serif; font-size: 1.8rem; color: var(--accent); }
+  .topbar p { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+
+  /* Company Tabs */
+  .company-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+  .company-tab { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+  .company-tab:hover { border-color: var(--accent); color: var(--text); }
+  .company-tab.active { background: rgba(245,158,11,0.15); border-color: var(--accent); color: var(--accent); }
+  .company-logo { font-size: 1.2rem; }
+
+  /* Company Panel */
+  .company-panel { display: none; }
+  .company-panel.active { display: block; }
+  .company-header { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(59,130,246,0.08)); border: 1px solid rgba(245,158,11,0.2); border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+  .company-icon { font-size: 2.5rem; }
+  .company-info h2 { font-family: 'Rajdhani', sans-serif; font-size: 1.4rem; color: var(--accent); }
+  .company-info p { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+  .company-tags { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .tag { padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; border: 1px solid; }
+  .tag.green { color: #22c55e; border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.08); }
+  .tag.blue { color: #60a5fa; border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.08); }
+  .tag.orange { color: var(--accent); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+
+  /* Category Sections */
+  .categories { display: grid; gap: 20px; }
+  .category-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .category-header { padding: 14px 20px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .category-header h3 { font-family: 'Rajdhani', sans-serif; font-size: 1rem; color: var(--text); flex: 1; }
+  .category-icon { font-size: 1.1rem; }
+  .category-toggle { color: var(--muted); transition: transform 0.3s; }
+  .category-toggle.open { transform: rotate(180deg); }
+  .qa-list { padding: 0; }
+  .qa-item { border-bottom: 1px solid rgba(30,45,74,0.5); }
+  .qa-item:last-child { border-bottom: none; }
+  .qa-question { padding: 14px 20px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; transition: background 0.2s; }
+  .qa-question:hover { background: rgba(245,158,11,0.04); }
+  .qa-question .q-icon { color: var(--accent); font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+  .qa-question .q-text { font-size: 0.87rem; color: var(--text); flex: 1; }
+  .qa-question .expand-icon { color: var(--muted); font-size: 0.8rem; flex-shrink: 0; transition: transform 0.2s; }
+  .qa-question.open .expand-icon { transform: rotate(180deg); }
+  .qa-answer { display: none; padding: 0 20px 16px 44px; font-size: 0.84rem; color: #94a3b8; line-height: 1.7; }
+  .qa-answer.show { display: block; }
+  .qa-answer ul { padding-left: 16px; margin-top: 6px; }
+  .qa-answer li { margin-bottom: 4px; }
+  .qa-answer code { background: rgba(59,130,246,0.15); color: #93c5fd; padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <h2>⚡ PEC Portal</h2>
+    <p>Placement Preparation</p>
+  </div>
+  <a href="/dashboard.html" class="nav-item"><span class="icon">🏠</span> Dashboard</a>
+  <a href="/test.html" class="nav-item"><span class="icon">📝</span> Take Test</a>
+  <a href="/compiler.html" class="nav-item"><span class="icon">💻</span> Compiler</a>
+  <a href="/tips.html" class="nav-item"><span class="icon">💡</span> Tips</a>
+  <a href="/resume.html" class="nav-item"><span class="icon">📄</span> Resume</a>
+  <a href="/leaderboard.html" class="nav-item"><span class="icon">🏆</span> Leaderboard</a>
+  <a href="/chatbot.html" class="nav-item"><span class="icon">🤖</span> AI Chatbot</a>
+  <a href="/companies.html" class="nav-item active"><span class="icon">🏢</span> Company Q&A</a>
+  <a href="/index.html" class="nav-item"><span class="icon">🚪</span> Logout</a>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <h1>🏢 Company-wise Interview Prep</h1>
+    <p>Real interview questions from top companies — Aptitude, Technical, Coding & HR</p>
+  </div>
+
+  <div class="company-tabs">
+    <div class="company-tab active" onclick="showCompany('tcs')"><span class="company-logo">🔵</span> TCS</div>
+    <div class="company-tab" onclick="showCompany('infosys')"><span class="company-logo">🟢</span> Infosys</div>
+    <div class="company-tab" onclick="showCompany('wipro')"><span class="company-logo">🟡</span> Wipro</div>
+    <div class="company-tab" onclick="showCompany('cognizant')"><span class="company-logo">🔷</span> Cognizant</div>
+    <div class="company-tab" onclick="showCompany('accenture')"><span class="company-logo">🟣</span> Accenture</div>
+  </div>
+
+  <!-- TCS -->
+  <div class="company-panel active" id="panel-tcs">
+    <div class="company-header">
+      <div class="company-icon">🔵</div>
+      <div class="company-info">
+        <h2>Tata Consultancy Services (TCS)</h2>
+        <p>India's largest IT company • 600,000+ employees • NQT based recruitment</p>
+        <div class="company-tags">
+          <span class="tag green">Package: 3.36–7 LPA</span>
+          <span class="tag blue">Rounds: Aptitude → Technical → HR</span>
+          <span class="tag orange">Focus: NQT + Coding</span>
+        </div>
+      </div>
+    </div>
+    <div class="categories">
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)">
+          <span class="category-icon">🧮</span>
+          <h3>Aptitude Questions</h3>
+          <span class="category-toggle">▼</span>
+        </div>
+        <div class="qa-list">
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">A train travels 360 km in 4 hours. What is its speed?</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer">Speed = Distance / Time = 360 / 4 = <strong>90 km/h</strong><br>Formula to remember: Speed × Time = Distance</div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">If 20% of a number is 80, what is 35% of the same number?</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer">20% = 80 → Number = 400<br>35% of 400 = <strong>140</strong></div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Find the odd one out: 2, 5, 10, 17, 26, 37, 50, 64</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer">Pattern: 1²+1, 2²+1, 3²+1, 4²+1 ... → 64 should be 65 (8²+1)<br>Odd one out: <strong>64</strong></div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">A pipe fills a tank in 6 hours, another empties in 8 hours. If both open together, when will tank fill?</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer">Net rate = 1/6 - 1/8 = 4/24 - 3/24 = 1/24<br>Time = <strong>24 hours</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)">
+          <span class="category-icon">💻</span>
+          <h3>Technical Questions</h3>
+          <span class="category-toggle">▼</span>
+        </div>
+        <div class="qa-list">
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is the difference between primary key and unique key?</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer"><ul><li><strong>Primary Key:</strong> Cannot be NULL, only one per table, uniquely identifies each row</li><li><strong>Unique Key:</strong> Can have one NULL value, multiple allowed per table, also ensures uniqueness</li></ul></div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Explain the 4 pillars of OOP.</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer"><ul><li><strong>Encapsulation:</strong> Bundling data & methods, hiding internal state</li><li><strong>Inheritance:</strong> Child class inherits parent properties</li><li><strong>Polymorphism:</strong> Same method, different behavior</li><li><strong>Abstraction:</strong> Hiding complexity, showing only essentials</li></ul></div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is normalization? Explain 1NF, 2NF, 3NF.</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer"><ul><li><strong>1NF:</strong> Atomic values, no repeating groups</li><li><strong>2NF:</strong> 1NF + no partial dependency on composite key</li><li><strong>3NF:</strong> 2NF + no transitive dependency</li></ul>Goal: reduce redundancy and improve data integrity.</div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is deadlock? How to prevent it?</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer">Deadlock: Two processes waiting for each other's resources indefinitely.<br><br>Prevention methods:<ul><li>Lock ordering</li><li>Timeout and retry</li><li>Deadlock detection algorithms</li><li>Banker's algorithm</li></ul></div>
+          </div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)">
+          <span class="category-icon">🖥️</span>
+          <h3>Coding Questions</h3>
+          <span class="category-toggle">▼</span>
+        </div>
+        <div class="qa-list">
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Reverse a string without using built-in functions.</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer"><code>s = "hello"</code><br><code>rev = ""</code><br><code>for ch in s: rev = ch + rev</code><br><code>print(rev) # "olleh"</code></div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Check if a number is palindrome.</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer"><code>n = int(input())</code><br><code>print("Palindrome" if str(n)==str(n)[::-1] else "Not Palindrome")</code></div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Find the factorial of a number using recursion.</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer"><code>def factorial(n):</code><br><code>&nbsp;&nbsp;return 1 if n==0 else n * factorial(n-1)</code><br><code>print(factorial(5)) # 120</code></div>
+          </div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)">
+          <span class="category-icon">🤝</span>
+          <h3>HR Questions</h3>
+          <span class="category-toggle">▼</span>
+        </div>
+        <div class="qa-list">
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Tell me about yourself.</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer">Structure: Present → Past → Future<br><br>"I'm [Name], final year CSE student at PEC. I have strong skills in Python and web development, and I've built projects like a placement portal. I'm passionate about software development and eager to contribute at TCS."</div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Why do you want to join TCS?</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer">"TCS is India's largest IT company with a strong learning culture. I'm attracted by the exposure to diverse projects, the structured career growth, and the opportunity to work on global-scale solutions. TCS's reputation for training freshers also excites me."</div>
+          </div>
+          <div class="qa-item">
+            <div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Where do you see yourself in 5 years?</span><span class="expand-icon">▼</span></div>
+            <div class="qa-answer">"In 5 years, I see myself as a skilled full-stack developer, having contributed to multiple client projects at TCS. I aim to take on technical leadership responsibilities and continuously upskill in cloud and AI technologies."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFOSYS -->
+  <div class="company-panel" id="panel-infosys">
+    <div class="company-header">
+      <div class="company-icon">🟢</div>
+      <div class="company-info">
+        <h2>Infosys</h2>
+        <p>Global IT leader • 340,000+ employees • InfyTQ based recruitment</p>
+        <div class="company-tags">
+          <span class="tag green">Package: 3.6–9 LPA</span>
+          <span class="tag blue">Rounds: InfyTQ → Technical → HR</span>
+          <span class="tag orange">Focus: Logical + Coding</span>
+        </div>
+      </div>
+    </div>
+    <div class="categories">
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">🧮</span><h3>Aptitude Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is the probability of getting a sum of 7 when two dice are thrown?</span><span class="expand-icon">▼</span></div><div class="qa-answer">Favorable: (1,6),(2,5),(3,4),(4,3),(5,2),(6,1) = 6 outcomes<br>Total = 36<br>Probability = 6/36 = <strong>1/6</strong></div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">A man bought an article for ₹500 and sold it for ₹600. Find the profit percentage.</span><span class="expand-icon">▼</span></div><div class="qa-answer">Profit = 600 - 500 = 100<br>Profit% = (100/500) × 100 = <strong>20%</strong></div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">If CLOCK is coded as KCOLC, how is HOUSE coded?</span><span class="expand-icon">▼</span></div><div class="qa-answer">Pattern: word is reversed<br>HOUSE reversed = <strong>ESUOH</strong></div></div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">💻</span><h3>Technical Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Difference between stack and queue.</span><span class="expand-icon">▼</span></div><div class="qa-answer"><ul><li><strong>Stack:</strong> LIFO (Last In First Out) — push/pop from same end</li><li><strong>Queue:</strong> FIFO (First In First Out) — enqueue at rear, dequeue from front</li></ul>Use cases: Stack → recursion, undo. Queue → scheduling, BFS.</div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is a foreign key?</span><span class="expand-icon">▼</span></div><div class="qa-answer">A foreign key is a column that creates a link between two tables. It references the primary key of another table, ensuring referential integrity — you can't insert a value that doesn't exist in the parent table.</div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Explain TCP vs UDP.</span><span class="expand-icon">▼</span></div><div class="qa-answer"><ul><li><strong>TCP:</strong> Connection-oriented, reliable, ordered delivery (HTTP, FTP, Email)</li><li><strong>UDP:</strong> Connectionless, faster, no guarantee (Video streaming, DNS, Gaming)</li></ul></div></div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">🤝</span><h3>HR Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Are you comfortable with relocation?</span><span class="expand-icon">▼</span></div><div class="qa-answer">"Yes, I am open to relocation. I understand that working in different cities provides exposure to diverse work environments and growth opportunities. I'm flexible and ready to relocate wherever Infosys requires."</div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Describe a time you worked in a team.</span><span class="expand-icon">▼</span></div><div class="qa-answer">Use the STAR method: Situation → Task → Action → Result.<br><br>"During my final year project, I worked in a team of 4 to build a placement portal. I handled the backend development. We had a tight deadline but through proper task division and daily standups, we delivered on time successfully."</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIPRO -->
+  <div class="company-panel" id="panel-wipro">
+    <div class="company-header">
+      <div class="company-icon">🟡</div>
+      <div class="company-info">
+        <h2>Wipro</h2>
+        <p>IT services giant • 250,000+ employees • NLTH (National Level Test for Hiring)</p>
+        <div class="company-tags">
+          <span class="tag green">Package: 3.5–6.5 LPA</span>
+          <span class="tag blue">Rounds: NLTH → Essay → Technical → HR</span>
+          <span class="tag orange">Focus: Verbal + Analytical</span>
+        </div>
+      </div>
+    </div>
+    <div class="categories">
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">🧮</span><h3>Aptitude Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Two numbers are in ratio 3:5. Their LCM is 75. Find the numbers.</span><span class="expand-icon">▼</span></div><div class="qa-answer">Let numbers = 3x, 5x<br>LCM of 3x and 5x = 15x = 75 → x = 5<br>Numbers = <strong>15 and 25</strong></div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Complete the series: 3, 6, 12, 24, __, 96</span><span class="expand-icon">▼</span></div><div class="qa-answer">Pattern: multiply by 2 each time<br>24 × 2 = <strong>48</strong></div></div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">💻</span><h3>Technical Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is the difference between GET and POST methods?</span><span class="expand-icon">▼</span></div><div class="qa-answer"><ul><li><strong>GET:</strong> Data in URL, limited size, cached, used to retrieve data</li><li><strong>POST:</strong> Data in body, no size limit, not cached, used to send/submit data</li></ul></div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What are the types of joins in SQL?</span><span class="expand-icon">▼</span></div><div class="qa-answer"><ul><li><strong>INNER JOIN:</strong> Returns matching rows from both tables</li><li><strong>LEFT JOIN:</strong> All rows from left + matching from right</li><li><strong>RIGHT JOIN:</strong> All rows from right + matching from left</li><li><strong>FULL JOIN:</strong> All rows from both tables</li></ul></div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is a pointer in C?</span><span class="expand-icon">▼</span></div><div class="qa-answer">A pointer is a variable that stores the memory address of another variable.<br><code>int a = 10;</code><br><code>int *p = &a; // p stores address of a</code><br><code>printf("%d", *p); // prints 10</code></div></div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">🤝</span><h3>HR Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What are your strengths and weaknesses?</span><span class="expand-icon">▼</span></div><div class="qa-answer"><strong>Strength:</strong> "I'm a quick learner. When I started learning Flask for my project, I mastered it within 2 weeks and deployed a full-stack app."<br><br><strong>Weakness:</strong> "I sometimes spend too much time perfecting details. But I've learned to balance quality with deadlines by setting time limits for each task."</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COGNIZANT -->
+  <div class="company-panel" id="panel-cognizant">
+    <div class="company-header">
+      <div class="company-icon">🔷</div>
+      <div class="company-info">
+        <h2>Cognizant (CTS)</h2>
+        <p>Digital transformation leader • 350,000+ employees • GenC recruitment</p>
+        <div class="company-tags">
+          <span class="tag green">Package: 4–8 LPA</span>
+          <span class="tag blue">Rounds: Aptitude → Coding → Technical → HR</span>
+          <span class="tag orange">Focus: GenC + GenC Pro</span>
+        </div>
+      </div>
+    </div>
+    <div class="categories">
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">🧮</span><h3>Aptitude Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Simple interest on ₹5000 at 8% per annum for 3 years?</span><span class="expand-icon">▼</span></div><div class="qa-answer">SI = (P × R × T) / 100 = (5000 × 8 × 3) / 100 = <strong>₹1200</strong></div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Find next term: 1, 4, 9, 16, 25, __</span><span class="expand-icon">▼</span></div><div class="qa-answer">Pattern: Perfect squares (1², 2², 3², 4², 5²...)<br>Next = 6² = <strong>36</strong></div></div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">💻</span><h3>Technical Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is a linked list? Types?</span><span class="expand-icon">▼</span></div><div class="qa-answer">A linked list is a linear data structure where elements are stored in nodes, each pointing to the next.<br><br>Types:<ul><li><strong>Singly Linked List:</strong> Each node points to next</li><li><strong>Doubly Linked List:</strong> Points to both next and previous</li><li><strong>Circular Linked List:</strong> Last node points to first</li></ul></div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Difference between ArrayList and LinkedList in Java?</span><span class="expand-icon">▼</span></div><div class="qa-answer"><ul><li><strong>ArrayList:</strong> Dynamic array, fast random access O(1), slow insert/delete O(n)</li><li><strong>LinkedList:</strong> Doubly linked, fast insert/delete O(1), slow access O(n)</li></ul>Use ArrayList for read-heavy, LinkedList for insert/delete-heavy operations.</div></div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">🤝</span><h3>HR Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">How do you handle pressure and tight deadlines?</span><span class="expand-icon">▼</span></div><div class="qa-answer">"I prioritize tasks by urgency and impact. During my project, when we had a tight deadline, I broke the work into small milestones, tracked progress daily, and avoided last-minute rushes. I stay calm under pressure and focus on solutions rather than problems."</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCENTURE -->
+  <div class="company-panel" id="panel-accenture">
+    <div class="company-header">
+      <div class="company-icon">🟣</div>
+      <div class="company-info">
+        <h2>Accenture</h2>
+        <p>Consulting & tech giant • 700,000+ employees • ASE & ATE roles</p>
+        <div class="company-tags">
+          <span class="tag green">Package: 4.5–9 LPA</span>
+          <span class="tag blue">Rounds: Cognitive + Technical + HR</span>
+          <span class="tag orange">Focus: Communication + Problem Solving</span>
+        </div>
+      </div>
+    </div>
+    <div class="categories">
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">🧮</span><h3>Aptitude Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Average of first 10 natural numbers?</span><span class="expand-icon">▼</span></div><div class="qa-answer">Sum = n(n+1)/2 = 10×11/2 = 55<br>Average = 55/10 = <strong>5.5</strong></div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">A work is completed by A in 12 days and B in 18 days. Together?</span><span class="expand-icon">▼</span></div><div class="qa-answer">A's 1-day work = 1/12, B's = 1/18<br>Together = 1/12 + 1/18 = 3/36 + 2/36 = 5/36<br>Days = 36/5 = <strong>7.2 days</strong></div></div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">💻</span><h3>Technical Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is cloud computing? Name its service models.</span><span class="expand-icon">▼</span></div><div class="qa-answer">Cloud computing is delivering IT resources (servers, storage, databases) over the internet on-demand.<br><br>Service Models:<ul><li><strong>IaaS:</strong> Infrastructure as a Service (AWS EC2, Azure VMs)</li><li><strong>PaaS:</strong> Platform as a Service (Heroku, Google App Engine)</li><li><strong>SaaS:</strong> Software as a Service (Gmail, Salesforce)</li></ul></div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">What is REST API?</span><span class="expand-icon">▼</span></div><div class="qa-answer">REST (Representational State Transfer) is an architectural style for APIs using HTTP methods:<ul><li><strong>GET:</strong> Retrieve data</li><li><strong>POST:</strong> Create data</li><li><strong>PUT:</strong> Update data</li><li><strong>DELETE:</strong> Delete data</li></ul>Uses JSON format. Stateless — each request contains all needed info.</div></div>
+        </div>
+      </div>
+      <div class="category-card">
+        <div class="category-header" onclick="toggleCategory(this)"><span class="category-icon">🤝</span><h3>HR Questions</h3><span class="category-toggle">▼</span></div>
+        <div class="qa-list">
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Why should we hire you?</span><span class="expand-icon">▼</span></div><div class="qa-answer">"You should hire me because I bring a strong technical foundation in web development combined with real project experience. I built and deployed a full-stack placement portal serving 2000+ students. I'm a fast learner, a team player, and genuinely passionate about solving problems through technology. I'm confident I'll add value from day one at Accenture."</div></div>
+          <div class="qa-item"><div class="qa-question" onclick="toggleAnswer(this)"><span class="q-icon">Q</span><span class="q-text">Do you have any questions for us?</span><span class="expand-icon">▼</span></div><div class="qa-answer">Always ask something! Good questions:<ul><li>"What does the onboarding and training process look like for freshers?"</li><li>"What technologies does the team I'll be joining primarily work with?"</li><li>"What growth opportunities are available in the first 2 years?"</li></ul></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showCompany(id) {
+  document.querySelectorAll('.company-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.company-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+function toggleCategory(header) {
+  const toggle = header.querySelector('.category-toggle');
+  const qaList = header.nextElementSibling;
+  toggle.classList.toggle('open');
+  qaList.style.display = qaList.style.display === 'none' ? 'block' : 'none';
+}
+function toggleAnswer(qEl) {
+  qEl.classList.toggle('open');
+  const answer = qEl.nextElementSibling;
+  answer.classList.toggle('show');
+}
+</script>
+</body>
+</html>
