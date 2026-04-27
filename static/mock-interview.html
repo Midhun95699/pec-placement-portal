@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mock Interview – PEC Placement Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#f0f6ff;color:#1e293b;min-height:100vh;display:flex;}
+
+/* ── Sidebar ── */
+.sidebar{width:240px;background:#ffffff;border-right:1.5px solid #dce8ff;padding:24px 16px;display:flex;flex-direction:column;position:fixed;height:100vh;overflow-y:auto;box-shadow:2px 0 12px rgba(26,86,219,0.06);z-index:100;}
+.sidebar-logo{padding:8px 12px;margin-bottom:28px;}
+.sidebar-logo h2{font-size:16px;font-weight:700;color:#1a56db;}
+.sidebar-logo p{font-size:12px;color:#64748b;margin-top:2px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;color:#64748b;margin-bottom:4px;transition:.2s;text-decoration:none;}
+.nav-item:hover,.nav-item.active{background:rgba(26,86,219,0.08);color:#1a56db;}
+.nav-item.active{border-left:3px solid #1a56db;}
+.nav-icon{font-size:18px;width:22px;text-align:center;}
+.sidebar-bottom{margin-top:auto;}
+.student-info{background:#f0f6ff;border:1px solid #dce8ff;border-radius:12px;padding:12px;margin-bottom:12px;}
+.student-info .name{font-weight:600;font-size:14px;color:#1e293b;}
+.student-info .dept{font-size:12px;color:#64748b;margin-top:2px;}
+.logout-btn{width:100%;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;color:#ef4444;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;}
+.logout-btn:hover{background:rgba(239,68,68,0.15);}
+
+/* ── Main ── */
+.main{margin-left:240px;flex:1;padding:32px;min-height:100vh;}
+.screen{display:none;}
+.screen.active{display:block;}
+.page-title{font-size:22px;font-weight:700;margin-bottom:6px;color:#1e293b;}
+.page-sub{font-size:14px;color:#64748b;margin-bottom:28px;}
+
+/* ── Company Cards ── */
+.companies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
+.company-card{background:#ffffff;border:1.5px solid #dce8ff;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(26,86,219,0.06);transition:.2s;}
+.company-card:hover{border-color:#1a56db;box-shadow:0 4px 16px rgba(26,86,219,0.12);}
+.company-logo{font-size:40px;margin-bottom:12px;}
+.company-name{font-size:18px;font-weight:700;color:#1e293b;margin-bottom:4px;}
+.company-pkg{font-size:13px;color:#64748b;margin-bottom:6px;}
+.company-role{font-size:12px;color:#94a3b8;margin-bottom:16px;}
+.round-btns{display:flex;gap:10px;}
+.btn-hr{flex:1;padding:10px;background:linear-gradient(135deg,#1a56db,#1447c0);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;}
+.btn-hr:hover{opacity:.9;}
+.btn-code{flex:1;padding:10px;background:#ffffff;border:1.5px solid #1a56db;border-radius:10px;color:#1a56db;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;}
+.btn-code:hover{background:rgba(26,86,219,0.06);}
+
+/* ── Pre-test / Rules ── */
+.rules-card{background:#ffffff;border:1.5px solid #dce8ff;border-radius:16px;padding:32px;max-width:640px;box-shadow:0 2px 8px rgba(26,86,219,0.06);}
+.rules-card h2{font-size:20px;font-weight:700;margin-bottom:6px;color:#1e293b;}
+.rules-card .sub{font-size:14px;color:#64748b;margin-bottom:24px;}
+.rules-list{list-style:none;margin-bottom:28px;}
+.rules-list li{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f0f6ff;font-size:14px;color:#334155;}
+.rules-list li:last-child{border-bottom:none;}
+.rule-icon{font-size:18px;flex-shrink:0;}
+.start-btn{padding:14px 32px;background:linear-gradient(135deg,#1a56db,#1447c0);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;}
+.start-btn:hover{opacity:.9;}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:#64748b;font-size:13px;cursor:pointer;margin-bottom:20px;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.back-link:hover{color:#1a56db;}
+
+/* ── Test Area ── */
+.test-header{background:#ffffff;border:1.5px solid #dce8ff;border-radius:16px;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;box-shadow:0 2px 8px rgba(26,86,219,0.06);}
+.test-info{font-size:14px;font-weight:600;color:#1e293b;}
+.test-info span{color:#64748b;font-weight:400;margin-left:8px;}
+.timer-box{background:#f0f6ff;border:1.5px solid #dce8ff;border-radius:10px;padding:8px 16px;font-size:16px;font-weight:700;color:#1a56db;font-variant-numeric:tabular-nums;}
+.timer-box.urgent{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.3);color:#ef4444;}
+.progress-bar-wrap{background:#dce8ff;border-radius:4px;height:6px;margin-bottom:20px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#1a56db,#60a5fa);border-radius:4px;transition:width .4s;}
+
+/* ── HR Question ── */
+.question-card{background:#ffffff;border:1.5px solid #dce8ff;border-radius:16px;padding:28px;margin-bottom:20px;box-shadow:0 2px 8px rgba(26,86,219,0.06);}
+.q-num{font-size:12px;font-weight:600;color:#1a56db;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.q-text{font-size:16px;font-weight:600;color:#1e293b;margin-bottom:16px;line-height:1.5;}
+.answer-area{width:100%;min-height:140px;padding:14px;background:#f8faff;border:1.5px solid #dce8ff;border-radius:12px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1e293b;resize:vertical;outline:none;transition:.2s;}
+.answer-area:focus{border-color:#1a56db;background:#fff;}
+.char-count{font-size:12px;color:#94a3b8;text-align:right;margin-top:6px;}
+.nav-btns{display:flex;gap:12px;margin-top:20px;}
+.btn-next{padding:12px 28px;background:linear-gradient(135deg,#1a56db,#1447c0);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-next:hover{opacity:.9;}
+.btn-submit-test{padding:12px 28px;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ── MCQ ── */
+.mcq-options{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+.mcq-option{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#f8faff;border:1.5px solid #dce8ff;border-radius:10px;cursor:pointer;transition:.2s;font-size:14px;color:#334155;}
+.mcq-option:hover{border-color:#1a56db;background:rgba(26,86,219,0.04);}
+.mcq-option.selected{border-color:#1a56db;background:rgba(26,86,219,0.08);color:#1a56db;font-weight:600;}
+.mcq-option input[type=radio]{accent-color:#1a56db;}
+
+/* ── Results ── */
+.results-card{background:#ffffff;border:1.5px solid #dce8ff;border-radius:16px;padding:32px;max-width:680px;box-shadow:0 2px 8px rgba(26,86,219,0.06);}
+.score-circle{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#1a56db,#60a5fa);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 4px 20px rgba(26,86,219,0.3);}
+.score-circle .score-num{font-size:32px;font-weight:700;color:#fff;}
+.score-circle .score-total{font-size:13px;color:rgba(255,255,255,0.8);}
+.perf-badge{display:inline-block;padding:6px 18px;border-radius:20px;font-size:14px;font-weight:700;margin-bottom:20px;}
+.perf-badge.excellent{background:rgba(34,197,94,0.12);color:#16a34a;border:1.5px solid rgba(34,197,94,0.3);}
+.perf-badge.good{background:rgba(26,86,219,0.1);color:#1a56db;border:1.5px solid rgba(26,86,219,0.2);}
+.perf-badge.needs{background:rgba(239,68,68,0.08);color:#ef4444;border:1.5px solid rgba(239,68,68,0.2);}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+.result-stat{background:#f8faff;border:1px solid #dce8ff;border-radius:12px;padding:14px;text-align:center;}
+.result-stat .rs-val{font-size:20px;font-weight:700;color:#1e293b;}
+.result-stat .rs-lbl{font-size:12px;color:#64748b;margin-top:4px;}
+.tab-warning-result{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#ef4444;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.review-section{margin-top:24px;}
+.review-section h3{font-size:15px;font-weight:700;color:#1e293b;margin-bottom:14px;}
+.review-item{background:#f8faff;border:1.5px solid #dce8ff;border-radius:12px;padding:16px;margin-bottom:12px;}
+.review-item .ri-q{font-size:13px;font-weight:600;color:#334155;margin-bottom:8px;}
+.review-item .ri-ans{font-size:13px;color:#64748b;margin-bottom:8px;font-style:italic;}
+.review-item .ri-score{font-size:13px;font-weight:600;}
+.review-item .ri-score.good{color:#16a34a;}
+.review-item .ri-score.mid{color:#f59e0b;}
+.review-item .ri-score.low{color:#ef4444;}
+.review-item .ri-feedback{font-size:12px;color:#94a3b8;margin-top:4px;}
+.mcq-review-item{background:#f8faff;border:1.5px solid #dce8ff;border-radius:12px;padding:16px;margin-bottom:12px;}
+.mcq-review-item .ri-q{font-size:13px;font-weight:600;color:#334155;margin-bottom:8px;}
+.mcq-review-item .ri-correct{font-size:13px;color:#16a34a;font-weight:600;}
+.mcq-review-item .ri-wrong{font-size:13px;color:#ef4444;font-weight:600;}
+.mcq-review-item .ri-your{font-size:13px;color:#64748b;}
+.done-btn{padding:12px 28px;background:linear-gradient(135deg,#1a56db,#1447c0);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:24px;}
+
+/* ── Anti-cheat overlays ── */
+.warning-banner{position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;padding:10px 20px;font-size:14px;font-weight:600;z-index:9999;display:none;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(239,68,68,0.4);}
+.warning-banner.show{display:flex;}
+.warning-banner .close-warn{margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;}
+.secure-badge{position:fixed;top:16px;right:16px;background:#16a34a;color:#fff;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;z-index:9998;display:none;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(22,163,74,0.3);}
+.secure-badge.show{display:flex;}
+.tab-switch-overlay{position:fixed;inset:0;background:rgba(239,68,68,0.95);z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;}
+.tab-switch-overlay.show{display:flex;}
+.tab-switch-overlay h2{font-size:28px;font-weight:700;margin-bottom:12px;}
+.tab-switch-overlay p{font-size:16px;opacity:.9;margin-bottom:24px;text-align:center;max-width:480px;}
+.tab-switch-overlay button{padding:12px 32px;background:#fff;color:#ef4444;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ── Misc ── */
+.info-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(26,86,219,0.08);border:1px solid rgba(26,86,219,0.15);border-radius:20px;padding:4px 12px;font-size:12px;color:#1a56db;font-weight:600;margin-right:8px;margin-bottom:8px;}
+.section-divider{height:1px;background:#dce8ff;margin:24px 0;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     ANTI-CHEAT OVERLAYS (always in DOM)
+══════════════════════════════════════════ -->
+<div class="warning-banner" id="warningBanner">
+  <span id="warningText">⚠️ Tab switch detected! (count: 1) – This is recorded.</span>
+  <button class="close-warn" onclick="closeWarning()">Dismiss</button>
+</div>
+
+<div class="secure-badge" id="secureBadge">🔒 Secure Mode</div>
+
+<div class="tab-switch-overlay" id="tabOverlay">
+  <h2>⚠️ Tab Switch Detected</h2>
+  <p id="tabOverlayMsg">You switched tabs or minimized the window. This has been recorded. Please return to the test immediately.</p>
+  <button onclick="dismissTabOverlay()">Return to Test</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════════ -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <h2>🎓 PEC Portal</h2>
+    <p>Placement Preparation</p>
+  </div>
+  <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a class="nav-item" href="test.html"><span class="nav-icon">📝</span> Take Test</a>
+  <a class="nav-item" href="compiler.html"><span class="nav-icon">💻</span> Code Compiler</a>
+  <a class="nav-item" href="tips.html"><span class="nav-icon">💡</span> Shortcut Tips</a>
+  <a class="nav-item" href="resume.html"><span class="nav-icon">📄</span> Resume Builder</a>
+  <a class="nav-item" href="companies.html"><span class="nav-icon">🏢</span> Company Q&amp;A</a>
+  <a class="nav-item active" href="mock-interview.html"><span class="nav-icon">🎤</span> Mock Interview</a>
+  <a class="nav-item" href="chatbot.html"><span class="nav-icon">🤖</span> AI Chatbot</a>
+  <div class="sidebar-bottom">
+    <div class="student-info">
+      <div class="name" id="sidebarName">Loading...</div>
+      <div class="dept" id="sidebarDept">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- ── SCREEN 1: Company Selection ── -->
+  <div class="screen active" id="screen-companies">
+    <div class="page-title">🎤 Mock Interview</div>
+    <div class="page-sub">Choose a company and round to begin your AI-powered mock interview</div>
+    <div class="companies-grid" id="companiesGrid"></div>
+  </div>
+
+  <!-- ── SCREEN 2: Pre-test / Rules ── -->
+  <div class="screen" id="screen-rules">
+    <button class="back-link" onclick="goBack('screen-companies')">← Back to Companies</button>
+    <div class="rules-card">
+      <h2 id="rulesTitle">HR Round – TCS</h2>
+      <div class="sub" id="rulesSubtitle">Read the rules carefully before starting</div>
+      <ul class="rules-list" id="rulesList"></ul>
+      <button class="start-btn" onclick="startTest()">▶ Start Test (Fullscreen)</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 3: HR Test ── -->
+  <div class="screen" id="screen-hr">
+    <div class="test-header">
+      <div class="test-info" id="hrTestInfo">HR Round<span>Question 1 of 5</span></div>
+      <div class="timer-box" id="hrTimer">15:00</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="hrProgress" style="width:20%"></div></div>
+    <div class="question-card">
+      <div class="q-num" id="hrQNum">Question 1 of 5</div>
+      <div class="q-text" id="hrQText">Loading...</div>
+      <textarea class="answer-area" id="hrAnswer" placeholder="Type your answer here..." oninput="updateCharCount()"></textarea>
+      <div class="char-count" id="charCount">0 characters</div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-next" id="hrNextBtn" onclick="hrNext()">Next Question →</button>
+      <button class="btn-submit-test" id="hrSubmitBtn" style="display:none" onclick="submitHR()">✅ Submit Test</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 4: Coding (MCQ) Test ── -->
+  <div class="screen" id="screen-coding">
+    <div class="test-header">
+      <div class="test-info" id="codingTestInfo">Coding Round<span>Question 1 of 10</span></div>
+      <div class="timer-box" id="codingTimer">20:00</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="codingProgress" style="width:10%"></div></div>
+    <div class="question-card">
+      <div class="q-num" id="codingQNum">Question 1 of 10</div>
+      <div class="q-text" id="codingQText">Loading...</div>
+      <div class="mcq-options" id="mcqOptions"></div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-next" id="codingNextBtn" onclick="codingNext()">Next Question →</button>
+      <button class="btn-submit-test" id="codingSubmitBtn" style="display:none" onclick="submitCoding()">✅ Submit Test</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 5: Results ── -->
+  <div class="screen" id="screen-results">
+    <div class="results-card">
+      <div style="text-align:center;margin-bottom:8px;">
+        <div class="score-circle">
+          <div class="score-num" id="resScore">0</div>
+          <div class="score-total" id="resTotal">/ 50</div>
+        </div>
+        <div class="perf-badge" id="resBadge">Good</div>
+        <div style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:4px;" id="resTitle">HR Round – TCS</div>
+        <div style="font-size:13px;color:#64748b;" id="resSubtitle">Interview completed</div>
+      </div>
+      <div class="result-stats">
+        <div class="result-stat"><div class="rs-val" id="resScorePct">0%</div><div class="rs-lbl">Score</div></div>
+        <div class="result-stat"><div class="rs-val" id="resTimeTaken">0:00</div><div class="rs-lbl">Time Taken</div></div>
+        <div class="result-stat"><div class="rs-val" id="resTabCount">0</div><div class="rs-lbl">Tab Switches</div></div>
+      </div>
+      <div class="tab-warning-result" id="tabWarnResult" style="display:none">
+        ⚠️ <span id="tabWarnText">Tab switches were recorded during this test.</span>
+      </div>
+      <div class="review-section">
+        <h3>📋 Answer Review</h3>
+        <div id="reviewList"></div>
+      </div>
+      <button class="done-btn" onclick="goBack('screen-companies')">← Back to Companies</button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// AUTH CHECK
+// ══════════════════════════════════════════
+(function(){
+  const token = localStorage.getItem('pt_token');
+  if(!token){ window.location.href='index.html'; }
+})();
+
+// ══════════════════════════════════════════
+// DATA: COMPANIES
+// ══════════════════════════════════════════
+const COMPANIES = [
+  { id:'tcs',        name:'TCS',        logo:'🔵', pkg:'3.36 LPA', role:'Software Engineer / Ninja',       color:'#0066cc' },
+  { id:'infosys',    name:'Infosys',    logo:'🟣', pkg:'3.6 LPA',  role:'Systems Engineer',                color:'#007cc2' },
+  { id:'wipro',      name:'Wipro',      logo:'🟢', pkg:'3.5 LPA',  role:'Project Engineer',                color:'#341f6e' },
+  { id:'cognizant',  name:'Cognizant',  logo:'🔷', pkg:'4 LPA',    role:'Programmer Analyst',              color:'#1a56db' },
+  { id:'accenture',  name:'Accenture',  logo:'🟪', pkg:'4.5 LPA',  role:'Associate Software Engineer',     color:'#a100ff' }
+];
+
+// ══════════════════════════════════════════
+// DATA: HR QUESTIONS
+// ══════════════════════════════════════════
+const HR_QUESTIONS = {
+  tcs: [
+    'Tell me about yourself.',
+    'Why do you want to join TCS?',
+    'Describe a challenging project you worked on.',
+    'Where do you see yourself in 5 years?',
+    'Are you comfortable with relocation and night shifts?'
+  ],
+  infosys: [
+    'Introduce yourself briefly.',
+    'Why Infosys over other companies?',
+    'Describe your final year project.',
+    'What are your technical strengths?',
+    'How do you handle work pressure?'
+  ],
+  wipro: [
+    'Tell me about yourself.',
+    'Why do you want to work at Wipro?',
+    'Describe a time you showed leadership.',
+    'What is your biggest weakness?',
+    'Are you a team player? Give an example.'
+  ],
+  cognizant: [
+    'Give a brief introduction.',
+    'Why Cognizant?',
+    'Describe a situation where you solved a problem creatively.',
+    'What motivates you?',
+    'How do you keep yourself updated with technology?'
+  ],
+  accenture: [
+    'Tell me about yourself.',
+    'Why Accenture?',
+    'Describe your best academic achievement.',
+    'How do you manage time with multiple tasks?',
+    'What do you know about Accenture\'s services?'
+  ]
+};
+const CODING_QUESTIONS={tcs:[{q:'Which keyword defines a function in Python?',opts:['func','def','function','define'],ans:1},{q:'What does len([1,2,3,4]) return?',opts:['3','4','5','Error'],ans:1},{q:'Which of these is a mutable data type in Python?',opts:['tuple','string','list','int'],ans:2},{q:'What is the output of print(2**10)?',opts:['20','100','1024','512'],ans:2},{q:'Which method adds an element to the end of a list?',opts:['add()','insert()','append()','push()'],ans:2},{q:'What is the correct way to open a file for reading in Python?',opts:["open(f,w)","open(f,r)","open(f,a)","open(f,x)"],ans:1},{q:'What does range(1,5) produce?',opts:['1,2,3,4,5','1,2,3,4','0,1,2,3,4','2,3,4,5'],ans:1},{q:'Which operator is used for floor division in Python?',opts:['/','%','//','**'],ans:2},{q:'What is the output of bool(0)?',opts:['True','False','0','None'],ans:1},{q:'Which loop is used when the number of iterations is known?',opts:['while','for','do-while','repeat'],ans:1}],infosys:[{q:'Time complexity of array index access?',opts:['O(n)','O(log n)','O(1)','O(n^2)'],ans:2},{q:'Which data structure uses LIFO principle?',opts:['Queue','Stack','Array','Linked List'],ans:1},{q:'Time complexity of binary search?',opts:['O(n)','O(n^2)','O(log n)','O(1)'],ans:2},{q:'In a singly linked list, each node contains:',opts:['Only data','Only pointer','Data and next pointer','Data and two pointers'],ans:2},{q:'Which data structure is used for BFS traversal?',opts:['Stack','Queue','Heap','Tree'],ans:1},{q:'Worst-case time complexity of bubble sort?',opts:['O(n)','O(n log n)','O(n^2)','O(log n)'],ans:2},{q:'A queue follows which principle?',opts:['LIFO','FIFO','FILO','LILO'],ans:1},{q:'Which is NOT a linear data structure?',opts:['Array','Linked List','Stack','Tree'],ans:3},{q:'Space complexity of recursive Fibonacci?',opts:['O(1)','O(n)','O(log n)','O(n^2)'],ans:1},{q:'In a doubly linked list, each node has:',opts:['One pointer','Two pointers','Three pointers','No pointer'],ans:1}],wipro:[{q:'Which sorting algorithm has best average-case time complexity?',opts:['Bubble Sort','Selection Sort','Merge Sort','Insertion Sort'],ans:2},{q:'Time complexity of merge sort?',opts:['O(n^2)','O(n log n)','O(n)','O(log n)'],ans:1},{q:'Which algorithm uses divide and conquer?',opts:['Bubble Sort','Insertion Sort','Quick Sort','Selection Sort'],ans:2},{q:'Best-case time complexity of insertion sort?',opts:['O(n^2)','O(n log n)','O(n)','O(1)'],ans:2},{q:'Which sorting algorithm is stable?',opts:['Quick Sort','Heap Sort','Merge Sort','Selection Sort'],ans:2},{q:'Space complexity of quick sort (average)?',opts:['O(1)','O(n)','O(log n)','O(n^2)'],ans:2},{q:'Dijkstra algorithm is used for:',opts:['Sorting','Shortest path','Minimum spanning tree','Graph coloring'],ans:1},{q:'Time complexity of heap sort?',opts:['O(n)','O(n^2)','O(n log n)','O(log n)'],ans:2},{q:'Which algorithm guarantees O(n log n) worst case?',opts:['Quick Sort','Bubble Sort','Merge Sort','Insertion Sort'],ans:2},{q:'What does Big O notation describe?',opts:['Best case','Average case','Worst case upper bound','Exact time'],ans:2}],cognizant:[{q:'Which OOP concept allows inheriting from another class?',opts:['Encapsulation','Polymorphism','Inheritance','Abstraction'],ans:2},{q:'What is method overloading?',opts:['Same name, different params','Same name, same params','Different name, same params','None'],ans:0},{q:'Which keyword creates an object in Java?',opts:['create','object','new','make'],ans:2},{q:'What is encapsulation?',opts:['Hiding implementation details','Multiple inheritance','Method overriding','Code reuse'],ans:0},{q:'Abstract class characteristic:',opts:['Cannot be instantiated','Has no methods','Has no constructor','All methods abstract'],ans:0},{q:'Output of: 10 + 20 + "30" in Java?',opts:['102030','3030','60','Error'],ans:1},{q:'Which modifier makes member accessible only within same class?',opts:['public','protected','private','default'],ans:2},{q:'What is polymorphism?',opts:['One class many forms','Many classes one form','One method one form','None'],ans:0},{q:'Which keyword prevents a class from being subclassed?',opts:['static','abstract','final','private'],ans:2},{q:'What is an interface in Java?',opts:['Class with only abstract methods','Class with only static methods','Class with constructors','Class with final methods'],ans:0}],accenture:[{q:'Which SQL clause filters records?',opts:['ORDER BY','GROUP BY','WHERE','HAVING'],ans:2},{q:'What does REST stand for?',opts:['Remote Execution State Transfer','Representational State Transfer','Remote State Transfer','Representational Service Transfer'],ans:1},{q:'Which HTTP method updates a resource?',opts:['GET','POST','PUT','DELETE'],ans:2},{q:'Purpose of PRIMARY KEY in SQL?',opts:['Allow duplicates','Uniquely identify each row','Speed up queries','Link two tables'],ans:1},{q:'Which SQL command removes all rows without deleting table?',opts:['DROP','DELETE','TRUNCATE','REMOVE'],ans:2},{q:'What does HTML stand for?',opts:['Hyper Text Markup Language','High Text Markup Language','Hyper Transfer Markup Language','None'],ans:0},{q:'HTTP status code for Not Found?',opts:['200','301','404','500'],ans:2},{q:'What is a foreign key?',opts:['A unique key','References primary key of another table','Cannot be null','Auto-incremented'],ans:1},{q:'Which SQL function returns number of rows?',opts:['SUM()','AVG()','COUNT()','MAX()'],ans:2},{q:'What does JSON stand for?',opts:['JavaScript Object Notation','Java Serialized Object Notation','JavaScript Online Notation','None'],ans:0}]};
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let state = {
+  company: null, round: null,
+  hrAnswers: [], hrCurrentQ: 0,
+  codingAnswers: [], codingCurrentQ: 0,
+  tabSwitchCount: 0, testActive: false,
+  startTime: null, timerInterval: null,
+  timeLimit: 0, timeLeft: 0
+};
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  loadUserInfo();
+  renderCompanies();
+  setupAntiCheat();
+});
+
+function loadUserInfo() {
+  const token = localStorage.getItem('pt_token');
+  if (!token) return;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    document.getElementById('sidebarName').textContent = payload.name || payload.username || 'Student';
+    document.getElementById('sidebarDept').textContent = payload.dept || payload.department || '—';
+  } catch(e) {
+    document.getElementById('sidebarName').textContent = 'Student';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('pt_token');
+  window.location.href = 'index.html';
+}
+
+// ══════════════════════════════════════════
+// SCREEN NAVIGATION
+// ══════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goBack(screenId) {
+  stopTimer();
+  exitFullscreen();
+  hideAntiCheatUI();
+  state.testActive = false;
+  showScreen(screenId);
+}
+
+// ══════════════════════════════════════════
+// RENDER COMPANIES
+// ══════════════════════════════════════════
+function renderCompanies() {
+  const grid = document.getElementById('companiesGrid');
+  grid.innerHTML = COMPANIES.map(c => `
+    <div class="company-card">
+      <div class="company-logo">${c.logo}</div>
+      <div class="company-name">${c.name}</div>
+      <div class="company-pkg">Package: ${c.pkg}</div>
+      <div class="company-role">${c.role}</div>
+      <div class="round-btns">
+        <button class="btn-hr" onclick="selectRound('${c.id}','hr')">🎤 HR Round</button>
+        <button class="btn-code" onclick="selectRound('${c.id}','coding')">💻 Coding Round</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// ROUND SELECTION → RULES SCREEN
+// ══════════════════════════════════════════
+function selectRound(companyId, round) {
+  state.company = companyId;
+  state.round = round;
+  state.tabSwitchCount = 0;
+
+  const company = COMPANIES.find(c => c.id === companyId);
+  const isHR = round === 'hr';
+
+  document.getElementById('rulesTitle').textContent = `${isHR ? '🎤 HR Round' : '💻 Coding Round'} – ${company.name}`;
+  document.getElementById('rulesSubtitle').textContent = isHR
+    ? '5 open-ended questions • 15 minutes • AI-scored'
+    : '10 MCQ questions • 20 minutes • No going back';
+
+  const rules = isHR ? [
+    ['📝', 'Answer 5 HR questions in your own words.'],
+    ['⏱️', 'You have 15 minutes total for all questions.'],
+    ['🤖', 'Each answer is AI-scored out of 10 based on keywords.'],
+    ['🔒', 'The test runs in fullscreen. Do not switch tabs.'],
+    ['⚠️', 'Tab switches are recorded. More than 3 will auto-submit.'],
+    ['��', 'Copy-paste and right-click are disabled during the test.']
+  ] : [
+    ['📝', '10 multiple-choice coding questions.'],
+    ['⏱️', 'You have 20 minutes total.'],
+    ['⬅️', 'You cannot go back to a previous question.'],
+    ['🔒', 'The test runs in fullscreen. Do not switch tabs.'],
+    ['⚠️', 'Tab switches are recorded. More than 3 will auto-submit.'],
+    ['🚫', 'Copy-paste and right-click are disabled during the test.']
+  ];
+
+  document.getElementById('rulesList').innerHTML = rules.map(([icon, text]) =>
+    `<li><span class="rule-icon">${icon}</span>${text}</li>`
+  ).join('');
+
+  showScreen('screen-rules');
+}
+
+// ══════════════════════════════════════════
+// START TEST
+// ══════════════════════════════════════════
+function startTest() {
+  requestFullscreen();
+  showAntiCheatUI();
+  state.testActive = true;
+  state.startTime = Date.now();
+  state.tabSwitchCount = 0;
+
+  if (state.round === 'hr') {
+    state.hrAnswers = new Array(5).fill('');
+    state.hrCurrentQ = 0;
+    state.timeLimit = 15 * 60;
+    state.timeLeft = state.timeLimit;
+    renderHRQuestion();
+    startTimer('hrTimer', () => submitHR());
+    showScreen('screen-hr');
+  } else {
+    state.codingAnswers = new Array(10).fill(null);
+    state.codingCurrentQ = 0;
+    state.timeLimit = 20 * 60;
+    state.timeLeft = state.timeLimit;
+    renderCodingQuestion();
+    startTimer('codingTimer', () => submitCoding());
+    showScreen('screen-coding');
+  }
+}
+
+// ══════════════════════════════════════════
+// HR ROUND
+// ══════════════════════════════════════════
+function renderHRQuestion() {
+  const questions = HR_QUESTIONS[state.company];
+  const i = state.hrCurrentQ;
+  const total = questions.length;
+
+  document.getElementById('hrTestInfo').innerHTML = `🎤 HR Round – ${COMPANIES.find(c=>c.id===state.company).name}<span>Question ${i+1} of ${total}</span>`;
+  document.getElementById('hrQNum').textContent = `Question ${i+1} of ${total}`;
+  document.getElementById('hrQText').textContent = questions[i];
+  document.getElementById('hrAnswer').value = state.hrAnswers[i] || '';
+  document.getElementById('charCount').textContent = (state.hrAnswers[i] || '').length + ' characters';
+  document.getElementById('hrProgress').style.width = ((i+1)/total*100) + '%';
+
+  const isLast = i === total - 1;
+  document.getElementById('hrNextBtn').style.display = isLast ? 'none' : 'inline-block';
+  document.getElementById('hrSubmitBtn').style.display = isLast ? 'inline-block' : 'none';
+}
+
+function updateCharCount() {
+  const val = document.getElementById('hrAnswer').value;
+  state.hrAnswers[state.hrCurrentQ] = val;
+  document.getElementById('charCount').textContent = val.length + ' characters';
+}
+
+function hrNext() {
+  state.hrAnswers[state.hrCurrentQ] = document.getElementById('hrAnswer').value;
+  if (state.hrCurrentQ < HR_QUESTIONS[state.company].length - 1) {
+    state.hrCurrentQ++;
+    renderHRQuestion();
+  }
+}
+
+function submitHR() {
+  state.hrAnswers[state.hrCurrentQ] = document.getElementById('hrAnswer').value;
+  stopTimer();
+  exitFullscreen();
+  hideAntiCheatUI();
+  state.testActive = false;
+  showHRResults();
+}
+
+// ══════════════════════════════════════════
+// HR SCORING (AI keyword matching)
+// ══════════════════════════════════════════
+const SCORE_KEYWORDS = ['experience','skills','team','project','learn','contribute','growth','work','develop','achieve','goal','strength','weakness','challenge','solution','manage','lead','communicate','adapt','improve','technology','knowledge','passion','motivated','professional','responsibility','opportunity','success','result','impact'];
+
+function scoreHRAnswer(answer) {
+  if (!answer || answer.trim().length < 20) return 0;
+  const lower = answer.toLowerCase();
+  const words = lower.split(/\s+/);
+  let score = 0;
+  // Length bonus
+  if (words.length >= 30) score += 2;
+  else if (words.length >= 15) score += 1;
+  // Keyword matching
+  let kwHits = 0;
+  SCORE_KEYWORDS.forEach(kw => { if (lower.includes(kw)) kwHits++; });
+  score += Math.min(kwHits * 1.5, 6);
+  // Sentence structure bonus
+  if (answer.includes('.') && answer.includes(' ')) score += 1;
+  if (answer.length > 200) score += 1;
+  return Math.min(Math.round(score), 10);
+}
+
+function getHRFeedback(score) {
+  if (score >= 8) return 'Excellent answer! Well-structured with strong keywords.';
+  if (score >= 6) return 'Good answer. Try to include more specific examples.';
+  if (score >= 4) return 'Average answer. Expand with more details and keywords.';
+  if (score >= 2) return 'Needs improvement. Add more relevant content.';
+  return 'Very brief. Please provide a detailed answer.';
+}
+
+function showHRResults() {
+  const questions = HR_QUESTIONS[state.company];
+  const scores = state.hrAnswers.map(a => scoreHRAnswer(a));
+  const total = scores.reduce((a,b) => a+b, 0);
+  const maxScore = questions.length * 10;
+  const pct = Math.round(total / maxScore * 100);
+  const timeTaken = Math.round((Date.now() - state.startTime) / 1000);
+
+  showResultsScreen(total, maxScore, pct, timeTaken, 'HR Round');
+
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = questions.map((q, i) => {
+    const s = scores[i];
+    const cls = s >= 7 ? 'good' : s >= 4 ? 'mid' : 'low';
+    return `
+      <div class="review-item">
+        <div class="ri-q">Q${i+1}: ${q}</div>
+        <div class="ri-ans">"${(state.hrAnswers[i] || '(no answer)').substring(0,120)}${state.hrAnswers[i] && state.hrAnswers[i].length > 120 ? '...' : ''}"</div>
+        <div class="ri-score ${cls}">Score: ${s}/10</div>
+        <div class="ri-feedback">${getHRFeedback(s)}</div>
+      </div>
+    `;
+  }).join('');
+
+  saveResult(total, maxScore, 'hr', state.hrAnswers);
+}
+
+// ══════════════════════════════════════════
+// CODING ROUND
+// ══════════════════════════════════════════
+function renderCodingQuestion() {
+  const questions = CODING_QUESTIONS[state.company];
+  const i = state.codingCurrentQ;
+  const total = questions.length;
+  const q = questions[i];
+
+  document.getElementById('codingTestInfo').innerHTML = `💻 Coding Round – ${COMPANIES.find(c=>c.id===state.company).name}<span>Question ${i+1} of ${total}</span>`;
+  document.getElementById('codingQNum').textContent = `Question ${i+1} of ${total}`;
+  document.getElementById('codingQText').textContent = q.q;
+  document.getElementById('codingProgress').style.width = ((i+1)/total*100) + '%';
+
+  const optionsEl = document.getElementById('mcqOptions');
+  optionsEl.innerHTML = q.opts.map((opt, idx) => `
+    <label class="mcq-option ${state.codingAnswers[i] === idx ? 'selected' : ''}" onclick="selectOption(${idx})">
+      <input type="radio" name="mcq" value="${idx}" ${state.codingAnswers[i] === idx ? 'checked' : ''}/>
+      <span>${String.fromCharCode(65+idx)}. ${opt}</span>
+    </label>
+  `).join('');
+
+  const isLast = i === total - 1;
+  document.getElementById('codingNextBtn').style.display = isLast ? 'none' : 'inline-block';
+  document.getElementById('codingSubmitBtn').style.display = isLast ? 'inline-block' : 'none';
+}
+
+function selectOption(idx) {
+  state.codingAnswers[state.codingCurrentQ] = idx;
+  renderCodingQuestion();
+}
+
+function codingNext() {
+  if (state.codingCurrentQ < CODING_QUESTIONS[state.company].length - 1) {
+    state.codingCurrentQ++;
+    renderCodingQuestion();
+  }
+}
+
+function submitCoding() {
+  stopTimer();
+  exitFullscreen();
+  hideAntiCheatUI();
+  state.testActive = false;
+  showCodingResults();
+}
+
+function showCodingResults() {
+  const questions = CODING_QUESTIONS[state.company];
+  let correct = 0;
+  questions.forEach((q, i) => { if (state.codingAnswers[i] === q.ans) correct++; });
+  const total = questions.length;
+  const pct = Math.round(correct / total * 100);
+  const timeTaken = Math.round((Date.now() - state.startTime) / 1000);
+
+  showResultsScreen(correct, total, pct, timeTaken, 'Coding Round');
+
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = questions.map((q, i) => {
+    const userAns = state.codingAnswers[i];
+    const isCorrect = userAns === q.ans;
+    return `
+      <div class="mcq-review-item">
+        <div class="ri-q">Q${i+1}: ${q.q}</div>
+        <div class="${isCorrect ? 'ri-correct' : 'ri-wrong'}">
+          ${isCorrect ? '✅ Correct' : '❌ Wrong'}
+        </div>
+        ${!isCorrect ? `<div class="ri-your">Your answer: ${userAns !== null ? String.fromCharCode(65+userAns)+'. '+q.opts[userAns] : 'Not answered'}</div>` : ''}
+        <div class="ri-correct" style="font-size:12px;color:#16a34a;">Correct: ${String.fromCharCode(65+q.ans)}. ${q.opts[q.ans]}</div>
+      </div>
+    `;
+  }).join('');
+
+  saveResult(correct, total, 'coding', state.codingAnswers);
+}
+
+// ══════════════════════════════════════════
+// RESULTS SCREEN
+// ══════════════════════════════════════════
+function showResultsScreen(score, total, pct, timeTaken, roundLabel) {
+  const company = COMPANIES.find(c => c.id === state.company);
+
+  document.getElementById('resScore').textContent = score;
+  document.getElementById('resTotal').textContent = '/ ' + total;
+  document.getElementById('resScorePct').textContent = pct + '%';
+  document.getElementById('resTimeTaken').textContent = formatTime(timeTaken);
+  document.getElementById('resTabCount').textContent = state.tabSwitchCount;
+  document.getElementById('resTitle').textContent = `${roundLabel} – ${company.name}`;
+  document.getElementById('resSubtitle').textContent = 'Interview completed';
+
+  const badge = document.getElementById('resBadge');
+  if (pct >= 80) { badge.textContent = '🏆 Excellent'; badge.className = 'perf-badge excellent'; }
+  else if (pct >= 60) { badge.textContent = '👍 Good'; badge.className = 'perf-badge good'; }
+  else { badge.textContent = '📚 Needs Improvement'; badge.className = 'perf-badge needs'; }
+
+  const tabWarn = document.getElementById('tabWarnResult');
+  if (state.tabSwitchCount > 0) {
+    tabWarn.style.display = 'flex';
+    document.getElementById('tabWarnText').textContent = `Note: ${state.tabSwitchCount} tab switch${state.tabSwitchCount > 1 ? 'es were' : ' was'} recorded during this test.`;
+  } else {
+    tabWarn.style.display = 'none';
+  }
+
+  showScreen('screen-results');
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════
+function startTimer(elId, onExpire) {
+  const el = document.getElementById(elId);
+  state.timerInterval = setInterval(() => {
+    state.timeLeft--;
+    el.textContent = formatTime(state.timeLeft);
+    if (state.timeLeft <= 60) el.classList.add('urgent');
+    else el.classList.remove('urgent');
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerInterval);
+      onExpire();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (state.timerInterval) {
+    clearInterval(state.timerInterval);
+    state.timerInterval = null;
+  }
+}
+
+// ══════════════════════════════════════════
+// ANTI-CHEAT
+// ══════════════════════════════════════════
+function setupAntiCheat() {
+  // Tab visibility
+  document.addEventListener('visibilitychange', () => {
+    if (!state.testActive) return;
+    if (document.hidden) {
+      state.tabSwitchCount++;
+      showTabWarning();
+      if (state.tabSwitchCount > 3) autoSubmit();
+    }
+  });
+
+  // Window blur
+  window.addEventListener('blur', () => {
+    if (!state.testActive) return;
+    state.tabSwitchCount++;
+    showTabWarning();
+    if (state.tabSwitchCount > 3) autoSubmit();
+  });
+
+  // Block copy/paste/contextmenu
+  document.addEventListener('copy', e => { if (state.testActive) e.preventDefault(); });
+  document.addEventListener('paste', e => { if (state.testActive) e.preventDefault(); });
+  document.addEventListener('contextmenu', e => { if (state.testActive) e.preventDefault(); });
+
+  // Block keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (!state.testActive) return;
+    const blocked = (
+      (e.ctrlKey && ['c','v','a'].includes(e.key.toLowerCase())) ||
+      (e.ctrlKey && e.key === 'Tab') ||
+      (e.altKey && e.key === 'Tab') ||
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && e.key === 'I')
+    );
+    if (blocked) e.preventDefault();
+  });
+}
+
+function showTabWarning() {
+  const banner = document.getElementById('warningBanner');
+  document.getElementById('warningText').textContent =
+    `⚠️ Tab switch detected! (count: ${state.tabSwitchCount}) – This is recorded.`;
+  banner.classList.add('show');
+
+  if (state.tabSwitchCount > 1) {
+    const overlay = document.getElementById('tabOverlay');
+    document.getElementById('tabOverlayMsg').textContent =
+      `You have switched tabs ${state.tabSwitchCount} time${state.tabSwitchCount > 1 ? 's' : ''}. This is recorded. ${state.tabSwitchCount >= 3 ? 'One more switch will auto-submit your test!' : 'Please stay on the test page.'}`;
+    overlay.classList.add('show');
+  }
+}
+
+function closeWarning() {
+  document.getElementById('warningBanner').classList.remove('show');
+}
+
+function dismissTabOverlay() {
+  document.getElementById('tabOverlay').classList.remove('show');
+}
+
+function autoSubmit() {
+  stopTimer();
+  exitFullscreen();
+  hideAntiCheatUI();
+  state.testActive = false;
+  alert('Test auto-submitted due to excessive tab switches (more than 3).');
+  if (state.round === 'hr') showHRResults();
+  else showCodingResults();
+}
+
+function showAntiCheatUI() {
+  document.getElementById('secureBadge').classList.add('show');
+}
+
+function hideAntiCheatUI() {
+  document.getElementById('secureBadge').classList.remove('show');
+  document.getElementById('warningBanner').classList.remove('show');
+  document.getElementById('tabOverlay').classList.remove('show');
+}
+
+// ══════════════════════════════════════════
+// FULLSCREEN
+// ══════════════════════════════════════════
+function requestFullscreen() {
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+}
+
+function exitFullscreen() {
+  try {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════
+// SAVE RESULT TO API
+// ══════════════════════════════════════════
+async function saveResult(score, total, roundType, answers) {
+  const token = localStorage.getItem('pt_token');
+  if (!token) return;
+  const timeTaken = Math.round((Date.now() - state.startTime) / 1000);
+  try {
+    await fetch('/api/interview/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        company: state.company,
+        round_type: roundType,
+        score: score,
+        total: total,
+        tab_switches: state.tabSwitchCount,
+        time_taken: timeTaken,
+        answers: answers
+      })
+    });
+  } catch(e) {
+    console.log('Could not save result:', e);
+  }
+}
+</script>
+</body>
+</html>

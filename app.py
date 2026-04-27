@@ -245,6 +245,90 @@ def get_all_students():
     except Exception as e:
         return jsonify({'success':False,'message':str(e)}), 500
 
+# ── SAVE INTERVIEW RESULT ──
+@app.route('/api/interview/save', methods=['POST'])
+@jwt_required()
+def save_interview():
+    try:
+        import json
+        student_id = get_jwt_identity()
+        data = request.get_json()
+        company     = data.get('company')
+        round_type  = data.get('round_type')   # 'hr' or 'coding'
+        score       = data.get('score', 0)
+        total       = data.get('total', 0)
+        tab_switches= data.get('tab_switches', 0)
+        time_taken  = data.get('time_taken', 0)
+        answers     = data.get('answers', [])
+
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO interview_results
+              (student_id, company, round_type, score, total, tab_switches, time_taken, answers)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (student_id, company, round_type, score, total,
+              tab_switches, time_taken, json.dumps(answers)))
+        conn.commit()
+        cursor.close(); conn.close()
+        return jsonify({'success': True, 'message': 'Interview result saved!'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# ── GET INTERVIEW RESULTS ──
+@app.route('/api/interview/results', methods=['GET'])
+@jwt_required()
+def get_interview_results():
+    try:
+        student_id = get_jwt_identity()
+        conn = get_db()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT company, round_type,
+                   MAX(score) as best_score, total,
+                   MIN(tab_switches) as min_tabs,
+                   COUNT(*) as attempts,
+                   MAX(created_at) as last_attempt
+            FROM interview_results
+            WHERE student_id=%s
+            GROUP BY company, round_type
+            ORDER BY last_attempt DESC
+        """, (student_id,))
+        results = cursor.fetchall()
+        for r in results:
+            if r.get('last_attempt'):
+                r['last_attempt'] = str(r['last_attempt'])
+        cursor.close(); conn.close()
+        return jsonify({'success': True, 'results': results})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# ── ADMIN — ALL INTERVIEW RESULTS ──
+@app.route('/api/admin/interviews', methods=['GET'])
+def get_all_interviews():
+    try:
+        conn = get_db()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT ir.id, s.name, s.roll_no, s.department,
+                   ir.company, ir.round_type, ir.score, ir.total,
+                   ir.tab_switches, ir.time_taken, ir.created_at
+            FROM interview_results ir
+            JOIN students s ON ir.student_id = s.id
+            ORDER BY ir.created_at DESC
+        """)
+        rows = cursor.fetchall()
+        for r in rows:
+            if r.get('created_at'):
+                r['created_at'] = str(r['created_at'])
+        cursor.close(); conn.close()
+        return jsonify({'success': True, 'interviews': rows})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
 # ── INIT DB ON STARTUP (runs with gunicorn too) ──
 print("🚀 PEC Placement Portal Backend Starting...")
 init_db()

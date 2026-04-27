@@ -20,6 +20,7 @@ def init_db():
     conn = get_db()
     if conn:
         cursor = conn.cursor()
+        cursor.execute("DROP TABLE IF EXISTS interview_results")
         cursor.execute("DROP TABLE IF EXISTS test_scores")
         cursor.execute("DROP TABLE IF EXISTS tasks")
         cursor.execute("DROP TABLE IF EXISTS students")
@@ -54,6 +55,21 @@ def init_db():
                 level VARCHAR(50) DEFAULT 'quick',
                 score INT DEFAULT 0,
                 total INT DEFAULT 10,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (student_id) REFERENCES students(id)
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE interview_results (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                student_id INT,
+                company VARCHAR(100),
+                round_type VARCHAR(20),
+                score INT DEFAULT 0,
+                total INT DEFAULT 0,
+                tab_switches INT DEFAULT 0,
+                time_taken INT DEFAULT 0,
+                answers JSON,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (student_id) REFERENCES students(id)
             )
